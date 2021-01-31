@@ -1,336 +1,247 @@
-import music21
-import tools
 import math
 from copy import deepcopy
+from enum import Enum
+
+import music21
+
+from src.arvo import sequences
 
 
-def additiveProcess(
-        originalStream, direction, progressionType="linear", numberOfRepetitions=1, numberOfIterations=0
-):
+class Direction(Enum):
     """
+    Determines the direction of minimalist processes.
+
+    FORWARD starts the process from the beginning of the stream;
+    BACKWARD starts the process from the end of the stream;
+    INWARD starts the process from the extremities of the stream inward;
+    OUTWARD starts the process from the middle of the stream outward.
+    """
+
+    FORWARD = 1
+    BACKWARD = 2
+    INWARD = 3
+    OUTWARD = 4
+
+
+def additive_process(
+    stream: music21.stream.Stream,
+    direction: Direction = Direction.FORWARD,
+    sequence: list[int] = sequences.LINEAR,
+    repetitions: int = 1,
+    steps: int = 0,
+) -> music21.stream.Stream:
+    """Applies an additive process to a stream.
 
     Builds a new stream by applying an additive process to the original stream. Only note and
     chord objects are included.
 
-    Parameters
-    ----------
-    originalStream : Stream
-        The original stream to process
-    direction : str
-        Determines the direction of the additive process:
-            "forward" starts building from the beginning of the stream
-            "backward" starts building from the end of the stream
-            "inward" starts building from the extremities of the stream inward
-            "outward" starts building from the middle of the stream outward
-    progressionType : str
-        Determines the type of mathematical progression:
-            "linear", "primes" or "fibonacci". Default is "linear".
-    numberOfRepetitions : int
-        Determines the number of times each segment is repeated before the next addition. Default is 1.
-    numberOfIterations : int
-        Overrides the number of iterations of the additive process. By default, it runs until
-        the original stream is complete.
+    Args:
+        stream: The original stream to process.
+        direction: Optional; The direction of the additive process. Default is Direction.FORWARD.
+        sequence: Optional; Determines the number sequence governing the additive process. Default is
+          sequences.LINEAR ([1,2,3,4,5,6,7...]).
+        repetitions: Optional; Determines the number of times each segment is repeated before moving to
+          the next step in the sequence. Default is 1.
+        steps: Optional; Stops the additive process after n steps in the sequence. By default,
+          it runs until the original stream is completed.
 
-    Returns
-    -------
-    newStream : Stream
-        The stream created by the additive process.
-
+    Returns:
+        The new stream created by the additive process.
     """
-    newStream = music21.stream.Stream()
-    originalNotes = originalStream.flat.notes
-    originalLength = len(originalNotes)
-    progressionList = _getProgressionList(progressionType)
-    progressionIndex = 0
+
+    new_stream = music21.stream.Stream()
+    original_notes = stream.flat.notes
+    original_length = len(original_notes)
+    progression_index = 0
     position1 = 0
     position2 = 0
-    currentLength = progressionList[progressionIndex]
+    current_length = sequence[progression_index]
     completed = False
 
     while not completed:
-        currentStream = music21.stream.Stream()
-        if direction == "forward":
+        current_stream = music21.stream.Stream()
+        if direction is Direction.FORWARD:
             position1 = 0
-            position2 = currentLength
-        elif direction == "backward":
-            position1 = originalLength - currentLength
-            position2 = originalLength
-        elif direction == "inward":
-            position1 = currentLength
-            position2 = originalLength - currentLength
+            position2 = current_length
+        elif direction is Direction.BACKWARD:
+            position1 = original_length - current_length
+            position2 = original_length
+        elif direction is Direction.INWARD:
+            position1 = current_length
+            position2 = original_length - current_length
             if position1 >= position2:
                 position1 = position2
                 completed = True
-        elif direction == "outward":
-            position1 = math.floor(originalLength / 2.0 - currentLength)
-            position2 = math.floor(originalLength / 2.0 + currentLength)
+        elif direction is Direction.OUTWARD:
+            position1 = math.floor(original_length / 2.0 - current_length)
+            position2 = math.floor(original_length / 2.0 + current_length)
         if position1 < 0:
             position1 = 0
             completed = True
-        if position2 >= originalLength:
-            position2 = originalLength
+        if position2 >= original_length:
+            position2 = original_length
             completed = True
-        for _ in range(numberOfRepetitions):
+        for _ in range(repetitions):
             if direction == "inward":
                 for i in range(0, position1):
-                    currentStream.append(deepcopy(originalNotes[i]))
-                for i in range(position2, originalLength):
-                    currentStream.append(deepcopy(originalNotes[i]))
+                    current_stream.append(deepcopy(original_notes[i]))
+                for i in range(position2, original_length):
+                    current_stream.append(deepcopy(original_notes[i]))
             else:
                 for i in range(position1, position2):
-                    currentStream.append(deepcopy(originalNotes[i]))
-        newStream.append(currentStream)
-        progressionIndex += 1
-        if progressionIndex == numberOfIterations:
+                    current_stream.append(deepcopy(original_notes[i]))
+        new_stream.append(current_stream)
+        progression_index += 1
+        if progression_index == steps:
             completed = True
-        currentLength = progressionList[progressionIndex]
+        current_length = sequence[progression_index]
 
-    return newStream.flat
+    return new_stream.flat
 
 
-def substractiveProcess(originalStream, direction, progressionType="linear", numberOfRepetitions=1,
-                        numberOfIterations=0):
-    """
+def substractive_process(
+    stream: music21.stream.Stream,
+    direction: Direction = Direction.FORWARD,
+    sequence: list[int] = sequences.LINEAR,
+    repetitions: int = 1,
+    steps: int = 0,
+) -> music21.stream.Stream:
+    """Applies an substractive process to a stream.
 
-    Builds a new stream by applying an substractive process to the original stream. Only note and
+    Builds a new stream by applying a substractive process to the original stream. Only note and
     chord objects are included.
 
-    ----------
-    originalStream : Stream
-        The original stream to process
-    direction : str
-        Determines the direction of the substractive process:
-            "forward" starts substracting from the beginning of the stream
-            "backward" starts substracting from the end of the stream
-            "inward" starts substracting from the extremities of the stream inward
-            "outward" starts substracting from the middle of the stream outward
-    progressionType : str
-        Determines the type of mathematical progression:
-            "linear", "primes" or "fibonacci"
-    numberOfRepetitions : int
-        Determines the number of times each segment is repeated before the next substraction.
-    numberOfIterations : int
-        Overrides the number of iterations of the substractive process. By default, it runs until
-        nothing is left of the original stream.
+    Args:
+        stream: The original stream to process.
+        direction: Optional; The direction of the substractive process. Default is Direction.FORWARD.
+        sequence: Optional; Determines the number sequence governing the substractive process. Default is
+          sequences.LINEAR ([1,2,3,4,5,6,7...]).
+        repetitions: Optional; Determines the number of times each segment is repeated before moving to
+          the next step in the sequence. Default is 1.
+        steps: Optional; Stops the substractive process after n steps in the sequence. By default,
+          it runs until the original stream is empty.
 
-    Returns
-    -------
-    newStream : Stream
-        The stream created by the additive process.
+    Returns:
+        The new stream created by the substractive process.
 
     """
-    newStream = music21.stream.Stream()
-    originalNotes = originalStream.flat.notes
-    originalLength = len(originalNotes)
-    progressionList = _getProgressionList(progressionType)
-    progressionList.insert(0, 0)
-    progressionIndex = 0
+    new_stream = music21.stream.Stream()
+    original_notes = stream.flat.notes
+    original_length = len(original_notes)
+    sequence.insert(0, 0)
+    progression_index = 0
 
     position1 = 0
     position2 = 0
-    currentLength = progressionList[progressionIndex]
+    current_length = sequence[progression_index]
     completed = False
 
     while not completed:
-        currentStream = music21.stream.Stream()
+        current_stream = music21.stream.Stream()
 
-        if direction == "forward":
-            position1 = currentLength
-            position2 = originalLength
-            if position1 >= originalLength:
-                position1 = originalLength
+        if direction is Direction.FORWARD:
+            position1 = current_length
+            position2 = original_length
+            if position1 >= original_length:
+                position1 = original_length
                 completed = True
-        elif direction == "backward":
-            position1 = originalLength - currentLength
+        elif direction is Direction.BACKWARD:
+            position1 = original_length - current_length
             position2 = 0
             if position1 < 0:
                 position1 = 0
                 completed = True
-        elif direction == "inward":
-            position1 = currentLength
-            position2 = originalLength - currentLength
+        elif direction is Direction.INWARD:
+            position1 = current_length
+            position2 = original_length - current_length
             if position2 < 0:
                 position2 = 0
             if position1 >= position2:
                 position1 = position2
                 completed = True
-        elif direction == "outward":
-            position1 = math.floor(originalLength / 2.0 - currentLength)
-            position2 = math.floor(originalLength / 2.0 + currentLength)
-            if position1 < 0 and position2 >= originalLength:
+        elif direction is Direction.OUTWARD:
+            position1 = math.floor(original_length / 2.0 - current_length)
+            position2 = math.floor(original_length / 2.0 + current_length)
+            if position1 < 0 and position2 >= original_length:
                 completed = True
             if position1 < 0:
                 position1 = 0
-            if position2 >= originalLength:
-                position2 = originalLength
+            if position2 >= original_length:
+                position2 = original_length
 
-        for _ in range(numberOfRepetitions):
-            if direction == "outward":
+        for _ in range(repetitions):
+            if direction is Direction.OUTWARD:
                 for i in range(0, position1):
-                    currentStream.append(deepcopy(originalNotes[i]))
-                for i in range(position2, originalLength):
-                    currentStream.append(deepcopy(originalNotes[i]))
+                    current_stream.append(deepcopy(original_notes[i]))
+                for i in range(position2, original_length):
+                    current_stream.append(deepcopy(original_notes[i]))
             else:
                 for i in range(position1, position2):
-                    currentStream.append(deepcopy(originalNotes[i]))
+                    current_stream.append(deepcopy(original_notes[i]))
 
-        newStream.append(currentStream)
-        progressionIndex += 1
-        if progressionIndex == numberOfIterations:
+        new_stream.append(current_stream)
+        progression_index += 1
+        if progression_index == steps:
             completed = True
-        currentLength = progressionList[progressionIndex]
+        current_length = sequence[progression_index]
 
-    return newStream.flat
+    return new_stream.flat
 
 
-def scanningProcess(originalStream, direction, progressionType, windowSize):
-    """
+def scanning_process(
+    stream: music21.stream.Stream,
+    direction: Direction = Direction.FORWARD,
+    sequence: list[int] = sequences.LINEAR,
+    window_size: int = 1,
+    repetitions: int = 1,
+    steps: int = 0,
+) -> music21.stream.Stream:
+    """Applies a scanning process to a stream.
 
     Builds a new stream by applying an scanning process to the original stream. Only note and
     chord objects are included.
     TODO: include inward/outward directions, numberOfRepetitions and numberOfIterations options from additive and substractive processes.
 
-    ----------
-    originalStream : Stream
-        The original stream to process
-    direction : str
-        Determines the direction of the substractive process:
-            "forward" starts scanning from the beginning of the stream
-            "backward" starts scanning from the end of the stream
-    progressionType : str
-        Determines the type of mathematical progression:
-            "linear", "primes" or "fibonacci"
-    windowSize : int
-        Determines the size of the "window" that is scanning the original stream.
+    Args:
+        stream: The original stream to process.
+        direction: Optional; The direction of the scanning process. Default is Direction.FORWARD.
+        sequence: Optional; Determines the number sequence governing the scanning process. Default is
+          sequences.LINEAR ([1,2,3,4,5,6,7...]).
+        window_size: Options; Determines the size of the "window" that is scanning the original stream.
+        repetitions: Optional; Determines the number of times each segment is repeated before moving to
+          the next step in the sequence. Default is 1.
+        steps: Optional; Stops the additive process after n steps in the sequence. By default,
+          it runs until the original stream is completed.
 
-    Returns
-    -------
-    newStream : Stream
-        The stream created by the additive process.
 
+    Returns:
+        The new stream created by the substractive process.
     """
 
-    newStream = music21.stream.Stream()
-    originalNotes = originalStream.flat.notes
-    originalLength = len(originalNotes)
-    progressionList = _getProgressionList(progressionType)
-    progressionIndex = 0
-    startPosition = 0
-    endPosition = 0
-    currentPosition = 0
+    new_stream = music21.stream.Stream()
+    original_notes = stream.flat.notes
+    original_length = len(original_notes)
+    progression_index = 0
+    start_position = 0
+    end_position = 0
+    current_position = 0
 
-    while currentPosition + windowSize < originalLength:
-        currentStream = music21.stream.Stream()
-        if direction == "forward":
-            startPosition = currentPosition
-            endPosition = currentPosition + windowSize
-        elif direction == "backward":
-            startPosition = originalLength - (currentPosition + windowSize)
-            endPosition = originalLength - currentPosition
-        if startPosition < 0:
-            startPosition = 0
-        if endPosition > originalLength:
-            endPosition = originalLength
-        for i in range(startPosition, endPosition):
-            currentStream.append(deepcopy(originalNotes[i]))
-        newStream.append(currentStream)
-        progressionIndex += 1
-        currentPosition = progressionList(progressionIndex)
+    while current_position + window_size < original_length:
+        current_stream = music21.stream.Stream()
+        if direction is Direction.FORWARD:
+            start_position = current_position
+            end_position = current_position + window_size
+        elif direction is Direction.BACKWARD:
+            start_position = original_length - (current_position + window_size)
+            end_position = original_length - current_position
+        if start_position < 0:
+            start_position = 0
+        if end_position > original_length:
+            end_position = original_length
+        for i in range(start_position, end_position):
+            current_stream.append(deepcopy(original_notes[i]))
+        new_stream.append(current_stream)
+        progression_index += 1
+        current_position = sequence(progression_index)
 
-    return newStream
-
-
-def _getProgressionList(progressionType):
-    linearList = []
-    for i in range(1, 200):
-        linearList.append(i)
-
-    primesList = [
-        2,
-        3,
-        5,
-        7,
-        11,
-        13,
-        17,
-        19,
-        23,
-        29,
-        31,
-        37,
-        41,
-        43,
-        47,
-        53,
-        59,
-        61,
-        67,
-        71,
-        73,
-        79,
-        83,
-        89,
-        97,
-        101,
-        103,
-        107,
-        109,
-        113,
-        127,
-        131,
-        137,
-        139,
-        149,
-        151,
-        157,
-        163,
-        167,
-        173,
-        179,
-        181,
-        191,
-        193,
-        197,
-        199,
-    ]
-
-    fibonacciList = [
-        1,
-        1,
-        2,
-        3,
-        5,
-        8,
-        13,
-        21,
-        34,
-        55,
-        89,
-        144,
-        233,
-        377,
-        610,
-        987,
-        1597,
-        2584,
-        4181,
-        6765,
-        10946,
-        17711,
-        28657,
-        46368,
-        75025,
-        121393,
-        196418,
-        317811,
-    ]
-
-    progressionList = []
-    if progressionType == "linear":
-        progressionList = linearList
-    elif progressionType == "primes":
-        progressionList = primesList
-    elif progressionType == "fibonacci":
-        progressionList = fibonacciList
-
-    return progressionList
+    return new_stream
