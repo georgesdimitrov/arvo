@@ -23,10 +23,16 @@ class Direction(Enum):
     OUTWARD = 4
 
 
+class StepMode(Enum):
+    RELATIVE = 1
+    ABSOLUTE = 2
+
+
 def additive_process(
     stream: music21.stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
+    step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
 ) -> music21.stream.Stream:
@@ -37,17 +43,19 @@ def additive_process(
 
     Args:
         stream: The original stream to process.
-        direction: Optional; The direction of the additive process. Default is minimalism.Direction.FORWARD.
+        direction: Optional; Determines the direction of the additive process. Default is FORWARD.
         step: Optional; Determines the number of elements added each iteration. Default is 1. If provided a sequence of
-         numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each iteration,
-         looping if it reaches the end of the sequence.
+          numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each iteration,
+          looping if it reaches the end of the sequence.
+        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the amount of elements
+          added each iteration relative to the previous iteration. In ABSOLUTE mode, step determines the amount
+          of elements added each iteration relative to the starting point.
         repetitions: Optional; Determines the number of times each segment is repeated before moving to
           the next iteration. Default is 1. If provided a sequence of numbers (for example, sequences.PRIMES), the
           repetitions parameter will cycle through the sequence each iteration, looping if it reaches the end of the
           sequence.
         iterations: Optional; Determines the number of iterations to do before the process stops. By default, the
-          process runs until the original stream is completed.
-
+          process runs until the original stream is completed or an infinite loop is detected.
     Returns:
         The new stream created by the additive process.
     """
@@ -83,26 +91,33 @@ def additive_process(
         if direction is Direction.FORWARD:
             position1 = 0
             position2 = current_length
+            if position2 > original_length:
+                position2 = original_length
+            if iterations is None and position2 == original_length:
+                completed = True
         elif direction is Direction.BACKWARD:
             position1 = original_length - current_length
             position2 = original_length
+            if position1 < 0:
+                position1 = 0
+            if iterations is None and position1 == 0:
+                completed = True
         elif direction is Direction.INWARD:
             position1 = current_length
             position2 = original_length - current_length
             if position1 >= position2:
                 position1 = position2
+            if iterations is None and position1 == position2:
                 completed = True
         elif direction is Direction.OUTWARD:
             position1 = math.floor(original_length / 2.0 - current_length)
             position2 = math.floor(original_length / 2.0 + current_length)
-        if position1 < 0:
-            position1 = 0
-            completed = True
-            break
-        if position2 > original_length:
-            position2 = original_length
-            completed = True
-            break
+            if position1 < 0:
+                position1 = 0
+            if position2 > original_length:
+                position2 = original_length
+            if iterations is None and position1 == 0 and position2 == original_length:
+                completed = True
 
         # Build the current iteration, repeating the segment the amount of times defined by the repetitions sequence.
         for _ in range(repetitions_sequence[repetitions_index]):
@@ -127,12 +142,18 @@ def additive_process(
         step_index += 1
         if step_index > len(step_sequence) - 1:
             step_index = 0
+            # Infinite loop check
+            if iterations is None and step_mode == StepMode.ABSOLUTE:
+                completed = True
         repetitions_index += 1
-        if repetitions_index > len(step_sequence) - 1:
+        if repetitions_index > len(repetitions_sequence) - 1:
             repetitions_index = 0
 
         # Update segment length
-        current_length += step_sequence[step_index]
+        if step_mode == StepMode.RELATIVE:
+            current_length += step_sequence[step_index]
+        elif step_mode == StepMode.ABSOLUTE:
+            current_length = step_sequence[step_index]
 
     return new_stream.flat
 
@@ -141,6 +162,7 @@ def subtractive_process(
     stream: music21.stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
+    step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
 ) -> music21.stream.Stream:
@@ -155,12 +177,16 @@ def subtractive_process(
         step: Optional; Determines the number of elements subtracted each iteration. Default is 1. If provided a
          sequence of numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each
          iteration, looping if it reaches the end of the sequence.
+        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the amount of elements
+          subtracted each iteration relative to the previous iteration. In ABSOLUTE mode, step determines the amount
+          of elements subtracted each iteration relative to the starting point.
         repetitions: Optional; Determines the number of times each segment is repeated before moving to
           the next iteration. Default is 1. If provided a sequence of numbers (for example, sequences.PRIMES), the
           repetitions parameter will cycle through the sequence each iteration, looping if it reaches the end of the
           sequence.
         iterations: Optional; Determines the number of iterations to do before the process stops. By default, the
-          process runs until the original stream disappears.
+          process runs until the original stream disappears. Note that the subtractive process starts with the complete
+          stream, so the first iteration results in the second segment.
 
     Returns:
         The new stream created by the subtractive process.
@@ -185,7 +211,7 @@ def subtractive_process(
     new_stream = music21.stream.Stream()
     original_notes = stream.flat.notes
     original_length = len(original_notes)
-    iteration_index = 0
+    iteration_index = -1
     position1 = 0
     position2 = 0
     current_length = 0
@@ -194,19 +220,20 @@ def subtractive_process(
     while not completed:
         current_stream = music21.stream.Stream()
 
-
         # Determine boundaries of segment to use for the current iteration, depending on direction.
         if direction is Direction.FORWARD:
             position1 = current_length
             position2 = original_length
             if position1 >= original_length:
                 position1 = original_length
+            if iterations is None and position1 == original_length:
                 completed = True
         elif direction is Direction.BACKWARD:
             position1 = 0
             position2 = original_length - current_length
             if position2 <= 0:
                 position2 = 0
+            if iterations is None and position2 == 0:
                 completed = True
         elif direction is Direction.INWARD:
             position1 = current_length
@@ -215,16 +242,17 @@ def subtractive_process(
                 position2 = 0
             if position1 >= position2:
                 position1 = position2
+            if iterations is None and position1 == position2:
                 completed = True
         elif direction is Direction.OUTWARD:
             position1 = math.floor(original_length / 2.0 - current_length)
             position2 = math.floor(original_length / 2.0 + current_length)
-            if position1 < 0 and position2 >= original_length:
-                completed = True
             if position1 < 0:
                 position1 = 0
             if position2 >= original_length:
                 position2 = original_length
+            if iterations is None and position1 == 0 and position2 == original_length:
+                completed = True
 
         # Build the current iteration, repeating the segment the amount of times defined by the repetitions sequence.
         for _ in range(repetitions_sequence[repetitions_index]):
@@ -249,12 +277,18 @@ def subtractive_process(
         step_index += 1
         if step_index > len(step_sequence) - 1:
             step_index = 0
+            # Infinite loop check
+            if iterations is None and step_mode == StepMode.ABSOLUTE:
+                completed = True
         repetitions_index += 1
-        if repetitions_index > len(step_sequence) - 1:
+        if repetitions_index > len(repetitions_sequence) - 1:
             repetitions_index = 0
 
         # Update segment length
-        current_length += step_sequence[step_index]
+        if step_mode == StepMode.RELATIVE:
+            current_length += step_sequence[step_index]
+        elif step_mode == StepMode.ABSOLUTE:
+            current_length = step_sequence[step_index]
 
     return new_stream.flat
 
@@ -263,6 +297,7 @@ def scanning_process(
     stream: music21.stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
+    step_mode: StepMode = StepMode.RELATIVE,
     window_size: Union[int, Sequence[int]] = 2,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
