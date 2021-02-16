@@ -3,17 +3,19 @@ Module for generative mathematical processes, such addition or subtraction.
 """
 
 import math
-from copy import deepcopy
-from enum import Enum
+import copy
+import enum
 from typing import Optional, Union, Sequence
-import music21
+
+from music21 import stream
 
 from src.arvo import sequences
+
 
 __all__ = ["Direction", "StepMode", "additive_process", "subtractive_process", "scanning_process"]
 
 
-class Direction(Enum):
+class Direction(enum.Enum):
     """
     Determines the direction of minimalist processes.
 
@@ -29,19 +31,19 @@ class Direction(Enum):
     OUTWARD = 4
 
 
-class StepMode(Enum):
+class StepMode(enum.Enum):
     RELATIVE = 1
     ABSOLUTE = 2
 
 
 def additive_process(
-    stream: music21.stream.Stream,
+    stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
-) -> music21.stream.Stream:
+) -> stream.Stream:
     """Applies an additive process to a stream.
 
     Builds a new stream by applying an additive process to the original stream. Only note and
@@ -81,7 +83,7 @@ def additive_process(
     repetitions_index = 0
 
     # Initialize function variables.
-    new_stream = music21.stream.Stream()
+    new_stream = stream.Stream()
     original_notes = stream.flat.notes
     original_length = len(original_notes)
     iteration_index = 0
@@ -91,7 +93,7 @@ def additive_process(
     completed = False
 
     while not completed:
-        current_stream = music21.stream.Stream()
+        current_stream = stream.Stream()
 
         # Determine boundaries of segment to use for the current iteration, depending on direction.
         if direction is Direction.FORWARD:
@@ -129,12 +131,12 @@ def additive_process(
         for _ in range(repetitions_sequence[repetitions_index]):
             if direction == Direction.INWARD:
                 for i in range(0, position1):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
                 for i in range(position2, original_length):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
             else:
                 for i in range(position1, position2):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
 
         # Add iteration to final sequence.
         new_stream.append(current_stream)
@@ -165,13 +167,13 @@ def additive_process(
 
 
 def subtractive_process(
-    stream: music21.stream.Stream,
+    stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
-) -> music21.stream.Stream:
+) -> stream.Stream:
     """Applies an subtractive process to a stream.
 
     Builds a new stream by applying a subtractive process to the original stream. Only note and
@@ -214,7 +216,7 @@ def subtractive_process(
     repetitions_index = 0
 
     # Initialize function variables.
-    new_stream = music21.stream.Stream()
+    new_stream = stream.Stream()
     original_notes = stream.flat.notes
     original_length = len(original_notes)
     iteration_index = -1
@@ -224,7 +226,7 @@ def subtractive_process(
     completed = False
 
     while not completed:
-        current_stream = music21.stream.Stream()
+        current_stream = stream.Stream()
 
         # Determine boundaries of segment to use for the current iteration, depending on direction.
         if direction is Direction.FORWARD:
@@ -264,12 +266,12 @@ def subtractive_process(
         for _ in range(repetitions_sequence[repetitions_index]):
             if direction is Direction.OUTWARD:
                 for i in range(0, position1):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
                 for i in range(position2, original_length):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
             else:
                 for i in range(position1, position2):
-                    current_stream.append(deepcopy(original_notes[i]))
+                    current_stream.append(copy.deepcopy(original_notes[i]))
 
         # Add iteration to final sequence.
         new_stream.append(current_stream)
@@ -300,14 +302,14 @@ def subtractive_process(
 
 
 def scanning_process(
-    stream: music21.stream.Stream,
+    stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
     window_size: Union[int, Sequence[int]] = 2,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations: Optional[int] = None,
-) -> music21.stream.Stream:
+) -> stream.Stream:
     """Applies a scanning process to a stream.
 
     Builds a new stream by applying an scanning process to the original stream. Only note and
@@ -333,7 +335,7 @@ def scanning_process(
         The new stream created by the subtractive process.
     """
 
-    new_stream = music21.stream.Stream()
+    new_stream = stream.Stream()
     original_notes = stream.flat.notes
     original_length = len(original_notes)
     progression_index = 0
@@ -342,7 +344,7 @@ def scanning_process(
     current_position = 0
 
     while current_position < original_length:
-        current_stream = music21.stream.Stream()
+        current_stream = stream.Stream()
         if direction is Direction.FORWARD:
             start_position = current_position
             end_position = current_position + window_size
@@ -354,7 +356,7 @@ def scanning_process(
         if end_position > original_length:
             end_position = original_length
         for i in range(start_position, end_position):
-            current_stream.append(deepcopy(original_notes[i]))
+            current_stream.append(copy.deepcopy(original_notes[i]))
         new_stream.append(current_stream)
         progression_index += 1
         if isinstance(interval, int):
