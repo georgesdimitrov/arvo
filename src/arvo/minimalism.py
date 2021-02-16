@@ -37,7 +37,7 @@ class StepMode(enum.Enum):
 
 
 def additive_process(
-    stream: stream.Stream,
+    original_stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
@@ -50,7 +50,7 @@ def additive_process(
     chord objects are included.
 
     Args:
-        stream: The original stream to process.
+        original_stream: The original stream to process.
         direction: Optional; Determines the direction of the additive process. Default is FORWARD.
         step: Optional; Determines the number of elements added each iteration. Default is 1. If provided a sequence of
           numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each iteration,
@@ -84,7 +84,7 @@ def additive_process(
 
     # Initialize function variables.
     new_stream = stream.Stream()
-    original_notes = stream.flat.notes
+    original_notes = original_stream.flat.notes
     original_length = len(original_notes)
     iteration_index = 0
     position1 = 0
@@ -167,7 +167,7 @@ def additive_process(
 
 
 def subtractive_process(
-    stream: stream.Stream,
+    original_stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
@@ -217,7 +217,7 @@ def subtractive_process(
 
     # Initialize function variables.
     new_stream = stream.Stream()
-    original_notes = stream.flat.notes
+    original_notes = original_stream.flat.notes
     original_length = len(original_notes)
     iteration_index = -1
     position1 = 0

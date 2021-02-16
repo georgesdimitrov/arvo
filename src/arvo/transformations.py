@@ -76,7 +76,7 @@ def scalar_inversion(
 
     # Check if inversion_axis is Pitch
     if isinstance(inversion_axis, str):
-        inversion_axis = inversion_axis.Pitch(inversion_axis)
+        inversion_axis = pitch.Pitch(inversion_axis)
 
     # Transpose all individual pitches
     for e in post_stream.recurse().notes:

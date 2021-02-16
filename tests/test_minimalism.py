@@ -6,7 +6,7 @@ from arvo import sequences
 
 @pytest.fixture
 def example_stream():
-    s = converter.parse("tinyNotation: C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4")
+    s = converter.parse("tinyNotation: C D E F G A B c d e f g")
     return s
 
 
@@ -19,235 +19,222 @@ def _getStreamNotes(original_stream):
 
 def test_additive_process(example_stream):
     result = minimalism.additive_process(example_stream)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4 
-        C4 D4 E4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C
+        C D 
+        C D E 
+        C D E F 
+        C D E F G 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B c
+        C D E F G A B c d
+        C D E F G A B c d e
+        C D E F G A B c d e f
+        C D E F G A B c d e f g
     """
     )
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
 
-
-def test_additive_process_direction_backward(example_stream):
-    result = minimalism.additive_process(
-        example_stream, direction=minimalism.Direction.BACKWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        g4
-        f4 g4  
-        e4 f4 g4  
-        d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        A4 B4 c4 d4 e4 f4 g4  
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
+@pytest.mark.parametrize(
+    "direction,expected_result",
+    [
+        (
+            minimalism.Direction.BACKWARD,
+            converter.parse(
+                """tinyNotation: 
+        g
+        f g  
+        e f g  
+        d e f g  
+        c d e f g  
+        B c d e f g  
+        A B c d e f g  
+        G A B c d e f g   
+        F G A B c d e f g   
+        E F G A B c d e f g   
+        D E F G A B c d e f g  
+        C D E F G A B c d e f g      
     """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
-
-
-def test_additive_process_direction_inward(example_stream):
-    result = minimalism.additive_process(
-        example_stream, direction=minimalism.Direction.INWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        C4 g4
-        C4 D4 f4 g4  
-        C4 D4 E4 e4 f4 g4   
-        C4 D4 E4 F4 d4 e4 f4 g4
-        C4 D4 E4 F4 G4 c4 d4 e4 f4 g4 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+            ),
+        ),
+        (
+            minimalism.Direction.INWARD,
+            converter.parse(
+                """tinyNotation: 
+        C g
+        C D f g  
+        C D E e f g   
+        C D E F d e f g
+        C D E F G c d e f g 
+        C D E F G A B c d e f g   
     """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
-
-
-def test_additive_process_direction_outward(example_stream):
-    result = minimalism.additive_process(
-        example_stream, direction=minimalism.Direction.OUTWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        A4 B4
-        G4 A4 B4 c4
-        F4 G4 A4 B4 c4 d4
-        E4 F4 G4 A4 B4 c4 d4 e4
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+            ),
+        ),
+        (
+            minimalism.Direction.OUTWARD,
+            converter.parse(
+                """tinyNotation: 
+        A B
+        G A B c
+        F G A B c d
+        E F G A B c d e
+        D E F G A B c d e f
+        C D E F G A B c d e f g
     """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+            ),
+        ),
+    ],
+)
+def test_additive_process_direction(example_stream, direction, expected_result):
+    result = minimalism.additive_process(example_stream, direction=direction)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_step_int(example_stream):
     result = minimalism.additive_process(example_stream, step=2)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C D 
+        C D E F 
+        C D E F G A 
+        C D E F G A B c
+        C D E F G A B c d e
+        C D E F G A B c d e f g
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_step_sequence(example_stream):
     result = minimalism.additive_process(example_stream, step=[1, 2, 3])
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4 E4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C
+        C D E 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B c d
+        C D E F G A B c d e f g
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_step_sequence_absolute(example_stream):
     result = minimalism.additive_process(
         example_stream, step=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 
-        C4 D4 E4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C D 
+        C D E 
+        C D E F G 
+        C D E F G A B 
+        C D E F G A B c d e f
+        C D E F G A B c d e f g
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_step_sequence_absolute_infinite_loop(example_stream):
     result = minimalism.additive_process(
         example_stream, step=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4 
-        C4 D4 E4 
+        C
+        C D 
+        C D E 
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_repetitions_int(example_stream):
     result = minimalism.additive_process(example_stream, repetitions=2)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4
-        C4 D4 
-        C4 D4 
-        C4 D4 E4 
-        C4 D4 E4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C
+        C
+        C D 
+        C D 
+        C D E 
+        C D E 
+        C D E F 
+        C D E F 
+        C D E F G 
+        C D E F G 
+        C D E F G A 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B 
+        C D E F G A B c
+        C D E F G A B c
+        C D E F G A B c d
+        C D E F G A B c d
+        C D E F G A B c d e
+        C D E F G A B c d e
+        C D E F G A B c d e f
+        C D E F G A B c d e f
+        C D E F G A B c d e f g
+        C D E F G A B c d e f g
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_repetitions_sequence(example_stream):
     result = minimalism.additive_process(example_stream, repetitions=[1, 2, 3])
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4 
-        C4 D4 
-        C4 D4 E4 
-        C4 D4 E4 
-        C4 D4 E4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
+        C
+        C D 
+        C D 
+        C D E 
+        C D E 
+        C D E 
+        C D E F 
+        C D E F G 
+        C D E F G 
+        C D E F G A 
+        C D E F G A 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B c
+        C D E F G A B c
+        C D E F G A B c d
+        C D E F G A B c d
+        C D E F G A B c d
+        C D E F G A B c d e
+        C D E F G A B c d e f
+        C D E F G A B c d e f
+        C D E F G A B c d e f g
+        C D E F G A B c d e f g
+        C D E F G A B c d e f g
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_iterations(example_stream):
     result = minimalism.additive_process(example_stream, iterations=8)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4 
-        C4 D4 E4 
-        C4 D4 E4 F4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 B4 c4
+        C
+        C D 
+        C D E 
+        C D E F 
+        C D E F G 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B c
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_additive_process_nonlinear(example_stream):
@@ -257,255 +244,241 @@ def test_additive_process_nonlinear(example_stream):
         step_mode=minimalism.StepMode.ABSOLUTE,
         iterations=8,
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4
-        C4 D4     
-        C4 D4     
-        C4
-        C4
-        C4 D4     
-        C4
-        C4 D4     
+        C
+        C D     
+        C D     
+        C
+        C
+        C D     
+        C
+        C D     
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process(example_stream):
     result = minimalism.subtractive_process(example_stream)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        A4 B4 c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        e4 f4 g4  
-        f4 g4  
-        g4
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        F G A B c d e f g   
+        G A B c d e f g   
+        A B c d e f g  
+        B c d e f g  
+        c d e f g  
+        d e f g  
+        e f g  
+        f g  
+        g
     """
     )
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
 
-
-def test_subtractive_process_direction_backward(example_stream):
-    result = minimalism.subtractive_process(
-        example_stream, direction=minimalism.Direction.BACKWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4
-        C4 D4 E4 F4 G4 A4 B4 c4 d4
-        C4 D4 E4 F4 G4 A4 B4 c4
-        C4 D4 E4 F4 G4 A4 B4 
-        C4 D4 E4 F4 G4 A4 
-        C4 D4 E4 F4 G4 
-        C4 D4 E4 F4 
-        C4 D4 E4 
-        C4 D4 
-        C4
+@pytest.mark.parametrize(
+    "direction,expected_result",
+    [
+        (
+            minimalism.Direction.BACKWARD,
+            converter.parse(
+                """tinyNotation: 
+        C D E F G A B c d e f g
+        C D E F G A B c d e f
+        C D E F G A B c d e
+        C D E F G A B c d
+        C D E F G A B c
+        C D E F G A B 
+        C D E F G A 
+        C D E F G 
+        C D E F 
+        C D E 
+        C D 
+        C   
     """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
-
-
-def test_subtractive_process_direction_inward(example_stream):
-    result = minimalism.subtractive_process(
-        example_stream, direction=minimalism.Direction.INWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4
-        E4 F4 G4 A4 B4 c4 d4 e4
-        F4 G4 A4 B4 c4 d4
-        G4 A4 B4 c4
-        A4 B4
+            ),
+        ),
+        (
+            minimalism.Direction.INWARD,
+            converter.parse(
+                """tinyNotation: 
+        C D E F G A B c d e f g
+        D E F G A B c d e f
+        E F G A B c d e
+        F G A B c d
+        G A B c
+        A B
+        """
+            ),
+        ),
+        (
+            minimalism.Direction.OUTWARD,
+            converter.parse(
+                """tinyNotation: 
+        C D E F G A B c d e f g   
+        C D E F G c d e f g 
+        C D E F d e f g
+        C D E e f g   
+        C D f g  
+        C g
     """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
-
-
-def test_subtractive_process_direction_outward(example_stream):
-    result = minimalism.subtractive_process(
-        example_stream, direction=minimalism.Direction.OUTWARD
-    )
-    intended_result = converter.parse(
-        """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        C4 D4 E4 F4 G4 c4 d4 e4 f4 g4 
-        C4 D4 E4 F4 d4 e4 f4 g4
-        C4 D4 E4 e4 f4 g4   
-        C4 D4 f4 g4  
-        C4 g4
-    """
-    )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+            ),
+        ),
+    ],
+)
+def test_subtractive_process_direction(example_stream, direction, expected_result):
+    result = minimalism.subtractive_process(example_stream, direction=direction)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_step_int(example_stream):
     result = minimalism.subtractive_process(example_stream, step=2)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        B4 c4 d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        f4 g4  
+        C D E F G A B c d e f g      
+        E F G A B c d e f g   
+        G A B c d e f g   
+        B c d e f g  
+        d e f g  
+        f g  
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_step_sequence(example_stream):
     result = minimalism.subtractive_process(example_stream, step=[1, 2, 3])
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        e4 f4 g4  
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        F G A B c d e f g   
+        B c d e f g  
+        c d e f g  
+        e f g  
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_step_sequence_absolute(example_stream):
     result = minimalism.subtractive_process(
         example_stream, step=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        A4 B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        g4
+        C D E F G A B c d e f g      
+        E F G A B c d e f g   
+        F G A B c d e f g   
+        A B c d e f g  
+        c d e f g  
+        g
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_step_sequence_absolute_infinite_loop(example_stream):
     result = minimalism.subtractive_process(
         example_stream, step=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        F G A B c d e f g   
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_repetitions_int(example_stream):
     result = minimalism.subtractive_process(example_stream, repetitions=2)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        A4 B4 c4 d4 e4 f4 g4  
-        A4 B4 c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        e4 f4 g4  
-        e4 f4 g4  
-        f4 g4  
-        f4 g4  
-        g4   
-        g4
+        C D E F G A B c d e f g      
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        E F G A B c d e f g   
+        F G A B c d e f g   
+        F G A B c d e f g   
+        G A B c d e f g   
+        G A B c d e f g   
+        A B c d e f g  
+        A B c d e f g  
+        B c d e f g  
+        B c d e f g  
+        c d e f g  
+        c d e f g  
+        d e f g  
+        d e f g  
+        e f g  
+        e f g  
+        f g  
+        f g  
+        g   
+        g
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_repetitions_sequence(example_stream):
     result = minimalism.subtractive_process(example_stream, repetitions=[1, 2, 3])
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        A4 B4 c4 d4 e4 f4 g4  
-        A4 B4 c4 d4 e4 f4 g4  
-        A4 B4 c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        d4 e4 f4 g4  
-        e4 f4 g4  
-        f4 g4  
-        f4 g4  
-        g4
-        g4
-        g4
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        E F G A B c d e f g   
+        E F G A B c d e f g   
+        F G A B c d e f g   
+        G A B c d e f g   
+        G A B c d e f g   
+        A B c d e f g  
+        A B c d e f g  
+        A B c d e f g  
+        B c d e f g  
+        c d e f g  
+        c d e f g  
+        d e f g  
+        d e f g  
+        d e f g  
+        e f g  
+        f g  
+        f g  
+        g
+        g
+        g
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_iterations(example_stream):
     result = minimalism.subtractive_process(example_stream, iterations=8)
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        G4 A4 B4 c4 d4 e4 f4 g4   
-        A4 B4 c4 d4 e4 f4 g4  
-        B4 c4 d4 e4 f4 g4  
-        c4 d4 e4 f4 g4  
-        d4 e4 f4 g4  
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        F G A B c d e f g   
+        G A B c d e f g   
+        A B c d e f g  
+        B c d e f g  
+        c d e f g  
+        d e f g  
     """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
 
 
 def test_subtractive_process_nonlinear(example_stream):
@@ -515,18 +488,17 @@ def test_subtractive_process_nonlinear(example_stream):
         step_mode=minimalism.StepMode.ABSOLUTE,
         iterations=8,
     )
-    intended_result = converter.parse(
+    expected_result = converter.parse(
         """tinyNotation: 
-        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
-        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
-        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        C D E F G A B c d e f g      
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        E F G A B c d e f g   
+        D E F G A B c d e f g  
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
+        D E F G A B c d e f g  
+        E F G A B c d e f g   
         """
     )
-
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
