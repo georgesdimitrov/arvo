@@ -42,9 +42,7 @@ def test_additive_process(example_stream):
 
 
 def test_additive_process_direction_backward(example_stream):
-    stream = minimalism.additive_process(
-        example_stream, direction=Direction.BACKWARD
-    )
+    stream = minimalism.additive_process(example_stream, direction=Direction.BACKWARD)
     intended_result = music21.converter.parse(
         """tinyNotation: 
         g4
@@ -66,9 +64,7 @@ def test_additive_process_direction_backward(example_stream):
 
 
 def test_additive_process_direction_inward(example_stream):
-    stream = minimalism.additive_process(
-        example_stream, direction=Direction.INWARD
-    )
+    stream = minimalism.additive_process(example_stream, direction=Direction.INWARD)
     intended_result = music21.converter.parse(
         """tinyNotation: 
         C4 g4
@@ -84,9 +80,7 @@ def test_additive_process_direction_inward(example_stream):
 
 
 def test_additive_process_direction_outward(example_stream):
-    stream = minimalism.additive_process(
-        example_stream, direction=Direction.OUTWARD
-    )
+    stream = minimalism.additive_process(example_stream, direction=Direction.OUTWARD)
     intended_result = music21.converter.parse(
         """tinyNotation: 
         A4 B4
@@ -157,10 +151,10 @@ def test_additive_process_step_sequence_absolute_infinite_loop(example_stream):
     )
     intended_result = music21.converter.parse(
         """tinyNotation: 
-            C4
-            C4 D4 
-            C4 D4 E4 
-            """
+        C4
+        C4 D4 
+        C4 D4 E4 
+        """
     )
 
     assert _getStreamNotes(stream) == _getStreamNotes(intended_result)
@@ -252,7 +246,30 @@ def test_additive_process_iterations(example_stream):
     assert _getStreamNotes(stream) == _getStreamNotes(intended_result)
 
 
-def test_substractive_process(example_stream):
+def test_additive_process_nonlinear(example_stream):
+    stream = minimalism.additive_process(
+        example_stream,
+        step=sequences.kolakoski(),
+        step_mode=StepMode.ABSOLUTE,
+        iterations=8,
+    )
+    intended_result = music21.converter.parse(
+        """tinyNotation: 
+        C4
+        C4 D4     
+        C4 D4     
+        C4
+        C4
+        C4 D4     
+        C4
+        C4 D4     
+        """
+    )
+
+    assert _getStreamNotes(stream) == _getStreamNotes(intended_result)
+
+
+def test_subtractive_process(example_stream):
     stream = minimalism.subtractive_process(example_stream)
     intended_result = music21.converter.parse(
         """tinyNotation: 
@@ -299,9 +316,7 @@ def test_subtractive_process_direction_backward(example_stream):
 
 
 def test_subtractive_process_direction_inward(example_stream):
-    stream = minimalism.subtractive_process(
-        example_stream, direction=Direction.INWARD
-    )
+    stream = minimalism.subtractive_process(example_stream, direction=Direction.INWARD)
     intended_result = music21.converter.parse(
         """tinyNotation: 
         C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4
@@ -317,9 +332,7 @@ def test_subtractive_process_direction_inward(example_stream):
 
 
 def test_subtractive_process_direction_outward(example_stream):
-    stream = minimalism.subtractive_process(
-        example_stream, direction=Direction.OUTWARD
-    )
+    stream = minimalism.subtractive_process(example_stream, direction=Direction.OUTWARD)
     intended_result = music21.converter.parse(
         """tinyNotation: 
         C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
@@ -482,6 +495,30 @@ def test_subtractive_process_iterations(example_stream):
         c4 d4 e4 f4 g4  
         d4 e4 f4 g4  
     """
+    )
+
+    assert _getStreamNotes(stream) == _getStreamNotes(intended_result)
+
+
+def test_subtractive_process_nonlinear(example_stream):
+    stream = minimalism.subtractive_process(
+        example_stream,
+        step=sequences.kolakoski(),
+        step_mode=StepMode.ABSOLUTE,
+        iterations=8,
+    )
+    intended_result = music21.converter.parse(
+        """tinyNotation: 
+        C4 D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4      
+        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
+        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
+        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
+        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        D4 E4 F4 G4 A4 B4 c4 d4 e4 f4 g4  
+        E4 F4 G4 A4 B4 c4 d4 e4 f4 g4   
+        """
     )
 
     assert _getStreamNotes(stream) == _getStreamNotes(intended_result)

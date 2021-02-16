@@ -1,3 +1,7 @@
+"""
+Module for generative mathematical processes, such addition or subtraction.
+"""
+
 import math
 from copy import deepcopy
 from enum import Enum
@@ -5,6 +9,8 @@ from typing import Optional, Union, Sequence
 import music21
 
 from src.arvo import sequences
+
+__all__ = ["Direction", "StepMode", "additive_process", "subtractive_process", "scanning_process"]
 
 
 class Direction(Enum):
