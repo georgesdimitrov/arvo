@@ -1,92 +1,162 @@
-import music21
-from copy import deepcopy
+"""
+Module for transformations such as transposition and inversion.
+"""
+import copy
+from typing import Optional, Union, Sequence
+
+from music21 import pitch
+from music21 import scale
+from music21 import stream
+
+__all__ = ["scalar_transposition", "scalar_inversion", "octave_shift"]
 
 
-def scaleSpaceTransposition(
-    originalStream,
-    scaleInterval,
-    referenceScale=music21.scale.ChromaticScale,
-    inPlace=False,
-):
-    if inPlace:
-        newStream = originalStream
+def scalar_transposition(
+    original_stream: stream.Stream,
+    steps: int,
+    reference_scale: scale.ConcreteScale = scale.ChromaticScale("C"),
+    in_place: bool = False,
+) -> stream.Stream:
+    """Performs scale-space transpotition on a stream.
+
+    Transposes all notes in a stream by a specified amount of scale steps in a specific scale space.
+
+    Args:
+        original_stream: The stream to process.
+        steps: The amount of steps to transpose. Positive values transpose up, negative values transpose down.
+        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is used.
+        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
+          object is returned.
+
+    Returns:
+        The transposed stream.
+    """
+    # Check if stream is to be processed in place
+    if in_place:
+        post_stream = original_stream
     else:
-        newStream = deepcopy(originalStream)
+        post_stream = copy.deepcopy(original_stream)
 
-    for streamPitch in newStream.pitches:
-        _transposePitchInScaleSpace(streamPitch, scaleInterval, referenceScale)
+    # Transpose all individual pitches
+    for e in post_stream.recurse().notes:
+        if e.isChord:
+            element_pitches = e.pitches
+        else:
+            element_pitches = [e.pitch]
 
-    return newStream
+        for stream_pitch in element_pitches:
+            _transpose_pitch_in_scale_space(stream_pitch, steps, reference_scale)
+
+    return post_stream
 
 
-def scaleSpaceInversion(
-    originalStream,
-    inversionAxis,
-    referenceScale=music21.scale.ChromaticScale,
-    inPlace=False,
-):
+def scalar_inversion(
+    original_stream: stream.Stream,
+    inversion_axis: Union[str, pitch.Pitch],
+    reference_scale: scale.ConcreteScale = scale.ChromaticScale("C"),
+    in_place: bool = False,
+) -> stream.Stream:
+    """Performs a scale-space inversion on a stream.
 
-    if inPlace:
-        newStream = originalStream
+    Args:
+        original_stream: The stream to process.
+        inversion_axis: The pitch around which to execute the inversion.
+        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is used.
+        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
+          object is returned.
+
+    Returns:
+        The inverted stream.
+    """
+    # Check if stream is to be processed in place
+    if in_place:
+        post_stream = original_stream
     else:
-        newStream = deepcopy(originalStream)
+        post_stream = copy.deepcopy(original_stream)
 
-    for streamPitch in newStream.pitches:
-        distanceFromAxis = _getScaleDistance(inversionAxis, streamPitch, referenceScale)
-        _transposePitchInScaleSpace(streamPitch, distanceFromAxis * -2, referenceScale)
+    # Check if inversion_axis is Pitch
+    if isinstance(inversion_axis, str):
+        inversion_axis = inversion_axis.Pitch(inversion_axis)
 
-    return newStream
+    # Transpose all individual pitches
+    for e in post_stream.recurse().notes:
+        if e.isChord:
+            element_pitches = e.pitches
+        else:
+            element_pitches = [e.pitch]
+
+        for stream_pitch in element_pitches:
+            distance_from_axis = _get_scale_distance(
+                inversion_axis, stream_pitch, reference_scale
+            )
+            _transpose_pitch_in_scale_space(
+                stream_pitch, distance_from_axis * -2, reference_scale
+            )
+
+    return post_stream
 
 
-def octaveShift(originalStream, octaveInterval, inPlace=False):
-    if inPlace:
-        newStream = originalStream
+def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False):
+    # Check if stream is to be processed in place
+    if in_place:
+        post_stream = original_stream
     else:
-        newStream = deepcopy(originalStream)
+        post_stream = copy.deepcopy(original_stream)
 
-    for streamPitch in newStream.pitches:
-        streamPitch.ps += 12 * octaveInterval
+    # Transpose all individual pitches
+    for e in post_stream.recurse().notes:
+        if e.isChord:
+            element_pitches = e.pitches
+        else:
+            element_pitches = [e.pitch]
 
-    return newStream
+        for stream_pitch in element_pitches:
+            stream_pitch.ps += 12 * octave_interval
+
+    return post_stream
 
 
-def _transposePitchInScaleSpace(originalPitch, scaleInterval, referenceScale):
-    if scaleInterval == 0:
+def _transpose_pitch_in_scale_space(
+    original_pitch: pitch.Pitch,
+    steps: int,
+    reference_scale: scale.ConcreteScale,
+)-> pitch.Pitch:
+    if steps == 0:
         return
-    if isinstance(originalPitch, str):
-        originalPitch = music21.pitch.Pitch(originalPitch)
-    if scaleInterval > 0:
+    if steps > 0:
         direction = "ascending"
     else:
         direction = "descending"
-        scaleInterval *= -1
-    newPitch = referenceScale.next(originalPitch, direction, scaleInterval)
-    originalPitch.ps = newPitch.ps
+        steps *= -1
+    new_pitch = reference_scale.next(original_pitch, direction, steps)
+    original_pitch.step = new_pitch.step
+    original_pitch.octave = new_pitch.octave
+    original_pitch.accidental = new_pitch.accidental
 
 
-def _getScaleDistance(pitchA, pitchB, referenceScale):
-    if isinstance(pitchA, str):
-        pitchA = music21.pitch.Pitch(pitchA)
-    if isinstance(pitchB, str):
-        pitchB = music21.pitch.Pitch(pitchB)
+def _get_scale_distance(pitch_a, pitch_b, referenceScale):
+    if isinstance(pitch_a, str):
+        pitch_a = pitch.Pitch(pitch_a)
+    if isinstance(pitch_b, str):
+        pitch_b = pitch.Pitch(pitch_b)
 
-    if pitchA.ps == pitchB.ps:
+    if pitch_a.ps == pitch_b.ps:
         return 0
 
     direction = "ascending"
-    if pitchB.ps < pitchA.ps:
+    if pitch_b.ps < pitch_a.ps:
         direction = "descending"
 
-    scaleDistance = 0
+    scale_distance = 0
     while True:
-        scaleDistance += 1
-        nextPitch = referenceScale.next(pitchA, direction, scaleDistance)
-        if nextPitch.ps == pitchB.ps:
+        scale_distance += 1
+        next_pitch = referenceScale.next(pitch_a, direction, scale_distance)
+        if next_pitch.ps == pitch_b.ps:
             break
-        if scaleDistance > 1000:
+        if scale_distance > 1000:
             return 0
 
     if direction == "descending":
-        scaleDistance *= -1
+        scale_distance *= -1
 
-    return scaleDistance
+    return scale_distance
