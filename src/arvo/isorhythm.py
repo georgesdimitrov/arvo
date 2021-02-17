@@ -1,56 +1,82 @@
-import music21
-import tools
-from copy import deepcopy
-from typing import Optional
+"""
+Functions for generating isorhythmic constructions from pitch and rhythm sequences.
+"""
+
+import copy
+import numbers
+from typing import Optional, Union, Sequence
+
+from music21 import stream
+from music21 import duration
+from music21 import pitch
+from music21 import note
+
+from arvo import tools
+
+
+__all__ = ["create_isorhythm"]
 
 
 def create_isorhythm(
-    color_stream: music21.stream.Stream,
-    talea_stream: music21.stream.Stream,
+    pitches: Union[
+        stream.Stream, Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note]]
+    ],
+    durations: Union[
+        stream.Stream, Sequence[Union[numbers.Number, duration.Duration, note.Note]]
+    ],
     length: Optional[int] = None,
-) -> music21.stream.Stream:
+) -> stream.Stream:
 
-    """Creates an isorythmic construction from color and talea streams.
+    """Creates an isorhythmic construction from pitches and durations sequences.
 
     Args:
-        color_stream: The stream containing pitch information.
-        talea_stream: The stream containing rhythm information.
+        pitches: The stream or Sequence containing pitch information. Sequence can consist of pitch classes (0-11),
+          midi note numbers (12+), note names (str), music21 Pitch objects or music21 Note objects.
+        durations: The stream or Sequence containing duration information. Sequence can consist of numeric values
+          (1 = quarter note), music21 Duration objects or music21 Note objects.
         length: Optional; The length of the resulting stream, expressed in isorhythmic elements. By default, the process
           continues until the cycle is completed. For example, provided a color of 5 pitches and a talea of 7 rhythms,
           this function will, by default, return an isorhythm of 35 elements.
 
     Returns:
-        The new stream created by the isorhythmic process.
+        The stream created by the isorhythmic process.
     """
+
+    # Create pitches list
+    if not isinstance(pitches, stream.Stream):
+        pitches = tools.pitches_to_stream(pitches)
     color_list = []
-    for element in color_stream.flat.notes:
+    for element in pitches.flat.notes:
         color_list.append(element)
 
+    # Create durations list
+    if not isinstance(durations, stream.Stream):
+        durations = tools.durations_to_stream(durations)
     talea_list = []
-    for element in talea_stream.flat.notes:
+    for element in durations.flat.notes:
         talea_list.append(element.duration)
 
-    color_counter = 0
-    talea_counter = 0
-    new_stream = music21.stream.Stream()
-    auto_stop = False
-
-    if length == 0:
-        auto_stop = True
-        length = 10000
+    # Initialize function variables
+    color_index = 0
+    talea_index = 0
+    current_length = 0
+    post_stream = stream.Stream()
 
     # Loop
-    for _ in range(length):
-        current_element = deepcopy(color_list[color_counter])
-        current_element.duration = talea_list[talea_counter]
-        new_stream.append(current_element)
-        color_counter += 1
-        if color_counter == len(color_list):
-            color_counter = 0
-        talea_counter += 1
-        if talea_counter == len(talea_list):
-            talea_counter = 0
-        if auto_stop is True and color_counter == 0 and talea_counter == 0:
+    while True:
+        current_element = copy.deepcopy(color_list[color_index])
+        current_element.duration = talea_list[talea_index]
+        post_stream.append(current_element)
+        color_index += 1
+        if color_index == len(color_list):
+            color_index = 0
+        talea_index += 1
+        if talea_index == len(talea_list):
+            talea_index = 0
+        current_length += 1
+        if length is None and color_index == 0 and talea_index == 0:
+            break
+        if length is not None and current_length == length:
             break
 
-    return new_stream
+    return post_stream
