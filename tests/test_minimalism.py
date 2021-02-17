@@ -2,6 +2,7 @@ import pytest
 from music21 import converter
 from arvo import minimalism
 from arvo import sequences
+from arvo import tools
 
 
 @pytest.fixture
@@ -10,11 +11,7 @@ def example_stream():
     return s
 
 
-def _getStreamNotes(original_stream):
-    notes = []
-    for n in original_stream.flat.notes:
-        notes.append(n.pitch.unicodeNameWithOctave)
-    return notes
+# Additive Process Tests
 
 
 def test_additive_process(example_stream):
@@ -35,7 +32,7 @@ def test_additive_process(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 @pytest.mark.parametrize(
@@ -90,7 +87,7 @@ def test_additive_process(example_stream):
 )
 def test_additive_process_direction(example_stream, direction, expected_result):
     result = minimalism.additive_process(example_stream, direction=direction)
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_step_int(example_stream):
@@ -105,7 +102,7 @@ def test_additive_process_step_int(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_step_sequence(example_stream):
@@ -120,7 +117,7 @@ def test_additive_process_step_sequence(example_stream):
         C D E F G A B c d e f g
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_step_sequence_absolute(example_stream):
@@ -137,7 +134,7 @@ def test_additive_process_step_sequence_absolute(example_stream):
         C D E F G A B c d e f g
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_step_sequence_absolute_infinite_loop(example_stream):
@@ -151,7 +148,7 @@ def test_additive_process_step_sequence_absolute_infinite_loop(example_stream):
         C D E 
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_repetitions_int(example_stream):
@@ -184,7 +181,7 @@ def test_additive_process_repetitions_int(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_repetitions_sequence(example_stream):
@@ -217,7 +214,7 @@ def test_additive_process_repetitions_sequence(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_iterations(example_stream):
@@ -234,7 +231,7 @@ def test_additive_process_iterations(example_stream):
         C D E F G A B c
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_additive_process_nonlinear(example_stream):
@@ -256,7 +253,10 @@ def test_additive_process_nonlinear(example_stream):
         C D     
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
+
+
+# Subtractive Process Tests
 
 
 def test_subtractive_process(example_stream):
@@ -277,7 +277,7 @@ def test_subtractive_process(example_stream):
         g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 @pytest.mark.parametrize(
@@ -332,7 +332,7 @@ def test_subtractive_process(example_stream):
 )
 def test_subtractive_process_direction(example_stream, direction, expected_result):
     result = minimalism.subtractive_process(example_stream, direction=direction)
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_step_int(example_stream):
@@ -347,7 +347,7 @@ def test_subtractive_process_step_int(example_stream):
         f g  
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_step_sequence(example_stream):
@@ -362,7 +362,7 @@ def test_subtractive_process_step_sequence(example_stream):
         e f g  
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_step_sequence_absolute(example_stream):
@@ -379,7 +379,7 @@ def test_subtractive_process_step_sequence_absolute(example_stream):
         g
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_step_sequence_absolute_infinite_loop(example_stream):
@@ -394,7 +394,7 @@ def test_subtractive_process_step_sequence_absolute_infinite_loop(example_stream
         F G A B c d e f g   
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_repetitions_int(example_stream):
@@ -427,7 +427,7 @@ def test_subtractive_process_repetitions_int(example_stream):
         g
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_repetitions_sequence(example_stream):
@@ -460,7 +460,7 @@ def test_subtractive_process_repetitions_sequence(example_stream):
         g
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_iterations(example_stream):
@@ -478,7 +478,7 @@ def test_subtractive_process_iterations(example_stream):
         d e f g  
     """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
 def test_subtractive_process_nonlinear(example_stream):
@@ -501,4 +501,4 @@ def test_subtractive_process_nonlinear(example_stream):
         E F G A B c d e f g   
         """
     )
-    assert _getStreamNotes(result) == _getStreamNotes(expected_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)

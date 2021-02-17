@@ -7,15 +7,10 @@ from music21 import chord
 from music21 import pitch
 from music21 import note
 
-"""
-createTVoice generates a T-voice melodic stream from an M-voice melodic stream
-Arguments:
-	Stream m_voice: melodic stream
-	Chord t_chord: resonance chord used to build the T-voice
-	int position: T-voice position, usually 1 or 2
-	string direction: T-Voice placement, "up", "down", "upAlternate" or "downAlternate"
-"""
+from arvo import tools
 
+
+__all__ = ["Direction", "TMode", "create_t_voice"]
 
 class Direction(enum.Enum):
     UP = 1
@@ -79,7 +74,7 @@ def create_t_voice(
 
     temp_pitch = pitch.Pitch()
 
-    for m_note in m_voice.flat.notes:
+    for m_note in tools.stream_to_notes(m_voice, in_place=True):
         temp_pitch.ps = m_note.pitch.ps
         position_index = 0
         while position_index < position:

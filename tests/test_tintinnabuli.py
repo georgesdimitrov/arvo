@@ -1,7 +1,8 @@
 import pytest
-from arvo import tintinnabuli
 from music21 import converter
 from music21 import chord
+from arvo import tintinnabuli
+from arvo import tools
 
 
 @pytest.fixture
@@ -16,17 +17,10 @@ def c_major_chord():
     return c
 
 
-def _getStreamNotes(original_stream):
-    notes = []
-    for n in original_stream.flat.notes:
-        notes.append(n.pitch.nameWithOctave)
-    return notes
-
-
 def test_create_t_voice(major_scale, c_major_chord):
     result = tintinnabuli.create_t_voice(major_scale, c_major_chord)
     intended_result = converter.parse("tinyNotation: E E G G c c c e")
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
 
 
 @pytest.mark.parametrize(
@@ -38,7 +32,7 @@ def test_create_t_voice(major_scale, c_major_chord):
 )
 def test_create_t_voice_position(major_scale, c_major_chord, position, intended_result):
     result = tintinnabuli.create_t_voice(major_scale, c_major_chord, position=position)
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
 
 
 @pytest.mark.parametrize(
@@ -64,19 +58,19 @@ def test_create_t_voice_direction(
     result = tintinnabuli.create_t_voice(
         major_scale, c_major_chord, direction=direction
     )
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
 
 
 def test_create_t_voice_pitch_list(major_scale):
     result = tintinnabuli.create_t_voice(major_scale, ("C", "D", "A"))
     intended_result = converter.parse("tinyNotation: D A A A A c c d")
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
 
 
 def test_create_t_voice_pitch_list_numeric(major_scale):
     result = tintinnabuli.create_t_voice(major_scale, (0, 2, 9))
     intended_result = converter.parse("tinyNotation: D A A A A c c d")
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
 
 
 @pytest.mark.parametrize(
@@ -88,4 +82,4 @@ def test_create_t_voice_pitch_list_numeric(major_scale):
 )
 def test_create_t_voice_tmode(major_scale, t_mode, intended_result):
     result = tintinnabuli.create_t_voice(major_scale, ("C#", "E", "A"), t_mode=t_mode)
-    assert _getStreamNotes(result) == _getStreamNotes(intended_result)
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)

@@ -9,7 +9,8 @@ from typing import Optional, Union, Sequence
 
 from music21 import stream
 
-from src.arvo import sequences
+from arvo import sequences
+from arvo import tools
 
 
 __all__ = ["Direction", "StepMode", "additive_process", "subtractive_process", "scanning_process"]
@@ -84,7 +85,7 @@ def additive_process(
 
     # Initialize function variables.
     new_stream = stream.Stream()
-    original_notes = original_stream.flat.notes
+    original_notes = tools.stream_to_notes(original_stream, in_place=True)
     original_length = len(original_notes)
     iteration_index = 0
     position1 = 0
@@ -217,7 +218,7 @@ def subtractive_process(
 
     # Initialize function variables.
     new_stream = stream.Stream()
-    original_notes = original_stream.flat.notes
+    original_notes = tools.stream_to_notes(original_stream, in_place=True)
     original_length = len(original_notes)
     iteration_index = -1
     position1 = 0

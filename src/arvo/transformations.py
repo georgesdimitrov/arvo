@@ -8,6 +8,8 @@ from music21 import pitch
 from music21 import scale
 from music21 import stream
 
+from src.arvo import tools
+
 __all__ = ["scalar_transposition", "scalar_inversion", "octave_shift"]
 
 
@@ -38,14 +40,8 @@ def scalar_transposition(
         post_stream = copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
-    for e in post_stream.recurse().notes:
-        if e.isChord:
-            element_pitches = e.pitches
-        else:
-            element_pitches = [e.pitch]
-
-        for stream_pitch in element_pitches:
-            _transpose_pitch_in_scale_space(stream_pitch, steps, reference_scale)
+    for p in tools.stream_to_pitches(post_stream, in_place=True):
+        _transpose_pitch_in_scale_space(p, steps, reference_scale)
 
     return post_stream
 
@@ -79,19 +75,9 @@ def scalar_inversion(
         inversion_axis = pitch.Pitch(inversion_axis)
 
     # Transpose all individual pitches
-    for e in post_stream.recurse().notes:
-        if e.isChord:
-            element_pitches = e.pitches
-        else:
-            element_pitches = [e.pitch]
-
-        for stream_pitch in element_pitches:
-            distance_from_axis = _get_scale_distance(
-                inversion_axis, stream_pitch, reference_scale
-            )
-            _transpose_pitch_in_scale_space(
-                stream_pitch, distance_from_axis * -2, reference_scale
-            )
+    for p in tools.stream_to_pitches(post_stream, in_place=True):
+        distance_from_axis = _get_scale_distance(inversion_axis, p, reference_scale)
+        _transpose_pitch_in_scale_space(p, distance_from_axis * -2, reference_scale)
 
     return post_stream
 
@@ -104,14 +90,8 @@ def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False
         post_stream = copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
-    for e in post_stream.recurse().notes:
-        if e.isChord:
-            element_pitches = e.pitches
-        else:
-            element_pitches = [e.pitch]
-
-        for stream_pitch in element_pitches:
-            stream_pitch.ps += 12 * octave_interval
+    for p in tools.stream_to_pitches(post_stream, in_place=True):
+        p.ps += 12 * octave_interval
 
     return post_stream
 
@@ -120,7 +100,7 @@ def _transpose_pitch_in_scale_space(
     original_pitch: pitch.Pitch,
     steps: int,
     reference_scale: scale.ConcreteScale,
-)-> pitch.Pitch:
+) -> pitch.Pitch:
     if steps == 0:
         return
     if steps > 0:
