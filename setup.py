@@ -1,13 +1,9 @@
-from setuptools import setup, find_packages
-from os.path import basename
-from os.path import dirname
-from os.path import join
-from os.path import splitext
-from glob import glob
+from setuptools import find_packages
+from setuptools import setup
 
 setup(
     name='arvo',
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(where='src'),
     package_dir={'': 'src'},
     url='https://github.com/georgesdimitrov/arvo',
