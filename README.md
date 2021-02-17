@@ -5,7 +5,7 @@ A python library for procedural music composition, based on the music21 (https:/
 This library currently contains the following core modules:
 
 * **Minimalism**: Functions for generating Philip Glass/Steve Reich-inspired additive and substractive processes.
-* **Transformations**: Functions for doing scalar transpositions and inversions.
+* **Transformations**: Functions for doing scalar transpositions and inversions, retrogrades...
 * **Tintinnabuli**: Functions for generating Arvo Pärt-inspired tintinnabuli.
 * **Isorhythm**: Functions for generating isorhythmic constructions from pitch and rhythm sequences.
 
