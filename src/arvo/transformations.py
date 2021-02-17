@@ -34,10 +34,7 @@ def scalar_transposition(
         The transposed stream.
     """
     # Check if stream is to be processed in place
-    if in_place:
-        post_stream = original_stream
-    else:
-        post_stream = copy.deepcopy(original_stream)
+    post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
     for p in tools.stream_to_pitches(post_stream, in_place=True):
@@ -65,10 +62,7 @@ def scalar_inversion(
         The inverted stream.
     """
     # Check if stream is to be processed in place
-    if in_place:
-        post_stream = original_stream
-    else:
-        post_stream = copy.deepcopy(original_stream)
+    post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Check if inversion_axis is Pitch
     if isinstance(inversion_axis, str):
@@ -82,29 +76,52 @@ def scalar_inversion(
     return post_stream
 
 
-def retrograde(original_stream: stream.Stream,   in_place: bool = False,
+def retrograde(
+    original_stream: stream.Stream,
+    in_place: bool = False,
 ) -> stream.Stream:
-    # Check if stream is to be processed in place
-    if in_place:
-        post_stream = original_stream.flat
-    else:
-        post_stream = copy.deepcopy(original_stream.flat)
+    """ Performs a retrograde operation on a Stream.
 
+    Args:
+        original_stream: The Stream to process.
+        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
+          object is returned.
+
+    Returns:
+        The reversed Stream.
+    """
+    # Check if stream is to be processed in place
+    post_stream = original_stream if in_place else copy.deepcopy(original_stream)
+
+    # Extract list of notes and clear stream of bars and notes
     notes = tools.stream_to_notes(post_stream, in_place=True)
+    post_stream.removeByClass("Barline")
+    post_stream.removeByClass("Measure")
     post_stream.remove(notes, recurse=True)
 
+    # Put back notes in the stream in reverse order
     for n in reversed(notes):
         post_stream.append(n)
+
+    post_stream.sort()
 
     return post_stream
 
 
 def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False):
+    """ Transpooses a Stream up or down by a number of octaves
+
+    Args:
+        original_stream: Stream to process.
+        octave_interval: The octave shift. Postive numbers transpose up, negative numbers transpose down.
+        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
+          object is returned.
+
+    Returns:
+        The transposed Stream.
+    """
     # Check if stream is to be processed in place
-    if in_place:
-        post_stream = original_stream
-    else:
-        post_stream = copy.deepcopy(original_stream)
+    post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
     for p in tools.stream_to_pitches(post_stream, in_place=True):

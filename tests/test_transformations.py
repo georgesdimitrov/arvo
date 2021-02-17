@@ -84,3 +84,9 @@ def test_retrograde(major_scale):
     result = transformations.retrograde(major_scale)
     intended_result = converter.parse("tinyNotation: c B A G F E D C")
     assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+
+
+def test_retrograde_in_place(major_scale):
+    transformations.retrograde(major_scale, in_place=True)
+    intended_result = converter.parse("tinyNotation: c B A G F E D C")
+    assert tools.stream_to_notes(major_scale) == tools.stream_to_notes(intended_result)
