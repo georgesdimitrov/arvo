@@ -90,8 +90,8 @@ def test_additive_process_direction(example_stream, direction, expected_result):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_additive_process_step_int(example_stream):
-    result = minimalism.additive_process(example_stream, step=2)
+def test_additive_process_step_value_int(example_stream):
+    result = minimalism.additive_process(example_stream, step_value=2)
     expected_result = converter.parse(
         """tinyNotation: 
         C D 
@@ -105,8 +105,8 @@ def test_additive_process_step_int(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_additive_process_step_sequence(example_stream):
-    result = minimalism.additive_process(example_stream, step=[1, 2, 3])
+def test_additive_process_step_value_sequence(example_stream):
+    result = minimalism.additive_process(example_stream, step_value=[1, 2, 3])
     expected_result = converter.parse(
         """tinyNotation: 
         C
@@ -120,9 +120,9 @@ def test_additive_process_step_sequence(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_additive_process_step_sequence_absolute(example_stream):
+def test_additive_process_step_value_sequence_absolute(example_stream):
     result = minimalism.additive_process(
-        example_stream, step=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
+        example_stream, step_value=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
     )
     expected_result = converter.parse(
         """tinyNotation: 
@@ -137,9 +137,9 @@ def test_additive_process_step_sequence_absolute(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_additive_process_step_sequence_absolute_infinite_loop(example_stream):
+def test_additive_process_step_value_sequence_absolute_infinite_loop(example_stream):
     result = minimalism.additive_process(
-        example_stream, step=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
+        example_stream, step_value=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
     )
     expected_result = converter.parse(
         """tinyNotation: 
@@ -217,8 +217,27 @@ def test_additive_process_repetitions_sequence(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_additive_process_iterations(example_stream):
-    result = minimalism.additive_process(example_stream, iterations=8)
+def test_additive_process_iterations_start(example_stream):
+    result = minimalism.additive_process(example_stream, iterations_start=3)
+    expected_result = converter.parse(
+        """tinyNotation: 
+        C D E 
+        C D E F 
+        C D E F G 
+        C D E F G A 
+        C D E F G A B 
+        C D E F G A B c
+        C D E F G A B c d
+        C D E F G A B c d e
+        C D E F G A B c d e f
+        C D E F G A B c d e f g
+    """
+    )
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
+
+
+def test_additive_process_iterations_end(example_stream):
+    result = minimalism.additive_process(example_stream, iterations_end=8)
     expected_result = converter.parse(
         """tinyNotation: 
         C
@@ -237,9 +256,9 @@ def test_additive_process_iterations(example_stream):
 def test_additive_process_nonlinear(example_stream):
     result = minimalism.additive_process(
         example_stream,
-        step=sequences.kolakoski(),
+        step_value=sequences.kolakoski(),
         step_mode=minimalism.StepMode.ABSOLUTE,
-        iterations=8,
+        iterations_end=8,
     )
     expected_result = converter.parse(
         """tinyNotation: 
@@ -335,8 +354,8 @@ def test_subtractive_process_direction(example_stream, direction, expected_resul
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_subtractive_process_step_int(example_stream):
-    result = minimalism.subtractive_process(example_stream, step=2)
+def test_subtractive_process_step_value_int(example_stream):
+    result = minimalism.subtractive_process(example_stream, step_value=2)
     expected_result = converter.parse(
         """tinyNotation: 
         C D E F G A B c d e f g      
@@ -350,8 +369,8 @@ def test_subtractive_process_step_int(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_subtractive_process_step_sequence(example_stream):
-    result = minimalism.subtractive_process(example_stream, step=[1, 2, 3])
+def test_subtractive_process_step_value_sequence(example_stream):
+    result = minimalism.subtractive_process(example_stream, step_value=[1, 2, 3])
     expected_result = converter.parse(
         """tinyNotation: 
         C D E F G A B c d e f g      
@@ -365,9 +384,9 @@ def test_subtractive_process_step_sequence(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_subtractive_process_step_sequence_absolute(example_stream):
+def test_subtractive_process_step_value_sequence_absolute(example_stream):
     result = minimalism.subtractive_process(
-        example_stream, step=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
+        example_stream, step_value=sequences.PRIMES, step_mode=minimalism.StepMode.ABSOLUTE
     )
     expected_result = converter.parse(
         """tinyNotation: 
@@ -382,9 +401,9 @@ def test_subtractive_process_step_sequence_absolute(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_subtractive_process_step_sequence_absolute_infinite_loop(example_stream):
+def test_subtractive_process_step_value_sequence_absolute_infinite_loop(example_stream):
     result = minimalism.subtractive_process(
-        example_stream, step=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
+        example_stream, step_value=[1, 2, 3], step_mode=minimalism.StepMode.ABSOLUTE
     )
     expected_result = converter.parse(
         """tinyNotation: 
@@ -463,8 +482,26 @@ def test_subtractive_process_repetitions_sequence(example_stream):
     assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
 
 
-def test_subtractive_process_iterations(example_stream):
-    result = minimalism.subtractive_process(example_stream, iterations=8)
+def test_subtractive_process_iterations_start(example_stream):
+    result = minimalism.subtractive_process(example_stream, iterations_start=3)
+    expected_result = converter.parse(
+        """tinyNotation: 
+        F G A B c d e f g   
+        G A B c d e f g   
+        A B c d e f g  
+        B c d e f g  
+        c d e f g  
+        d e f g  
+        e f g  
+        f g  
+        g
+    """
+    )
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(expected_result)
+
+
+def test_subtractive_process_iterations_end(example_stream):
+    result = minimalism.subtractive_process(example_stream, iterations_end=8)
     expected_result = converter.parse(
         """tinyNotation: 
         C D E F G A B c d e f g      
@@ -484,9 +521,9 @@ def test_subtractive_process_iterations(example_stream):
 def test_subtractive_process_nonlinear(example_stream):
     result = minimalism.subtractive_process(
         example_stream,
-        step=sequences.kolakoski(),
+        step_value=sequences.kolakoski(),
         step_mode=minimalism.StepMode.ABSOLUTE,
-        iterations=8,
+        iterations_end=8,
     )
     expected_result = converter.parse(
         """tinyNotation: 
