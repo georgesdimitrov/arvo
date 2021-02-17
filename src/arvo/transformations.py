@@ -74,7 +74,7 @@ def scalar_inversion(
     if isinstance(inversion_axis, str):
         inversion_axis = pitch.Pitch(inversion_axis)
 
-    # Transpose all individual pitches
+    # Invert all individual pitches
     for p in tools.stream_to_pitches(post_stream, in_place=True):
         distance_from_axis = _get_scale_distance(inversion_axis, p, reference_scale)
         _transpose_pitch_in_scale_space(p, distance_from_axis * -2, reference_scale)
@@ -114,7 +114,7 @@ def _transpose_pitch_in_scale_space(
     original_pitch.accidental = new_pitch.accidental
 
 
-def _get_scale_distance(pitch_a, pitch_b, referenceScale):
+def _get_scale_distance(pitch_a, pitch_b, reference_scale):
     if isinstance(pitch_a, str):
         pitch_a = pitch.Pitch(pitch_a)
     if isinstance(pitch_b, str):
@@ -130,7 +130,7 @@ def _get_scale_distance(pitch_a, pitch_b, referenceScale):
     scale_distance = 0
     while True:
         scale_distance += 1
-        next_pitch = referenceScale.next(pitch_a, direction, scale_distance)
+        next_pitch = reference_scale.next(pitch_a, direction, scale_distance)
         if next_pitch.ps == pitch_b.ps:
             break
         if scale_distance > 1000:
