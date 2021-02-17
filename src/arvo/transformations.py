@@ -82,6 +82,23 @@ def scalar_inversion(
     return post_stream
 
 
+def retrograde(original_stream: stream.Stream,   in_place: bool = False,
+) -> stream.Stream:
+    # Check if stream is to be processed in place
+    if in_place:
+        post_stream = original_stream.flat
+    else:
+        post_stream = copy.deepcopy(original_stream.flat)
+
+    notes = tools.stream_to_notes(post_stream, in_place=True)
+    post_stream.remove(notes, recurse=True)
+
+    for n in reversed(notes):
+        post_stream.append(n)
+
+    return post_stream
+
+
 def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False):
     # Check if stream is to be processed in place
     if in_place:

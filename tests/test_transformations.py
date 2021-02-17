@@ -75,3 +75,12 @@ def test_scalar_inversion_in_place(major_scale):
     transformations.scalar_inversion(major_scale, "C3", in_place=True)
     intended_result = converter.parse("tinyNotation: C BB- GG# GG FF EE- CC# CC")
     assert tools.stream_to_notes(major_scale) == tools.stream_to_notes(intended_result)
+
+
+# Retrograde Tests
+
+
+def test_retrograde(major_scale):
+    result = transformations.retrograde(major_scale)
+    intended_result = converter.parse("tinyNotation: c B A G F E D C")
+    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
