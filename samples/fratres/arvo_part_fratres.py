@@ -7,27 +7,26 @@ from music21 import meter
 from music21 import scale
 from music21 import metadata
 
-# Build core melody
-# ----------------------------------------------------------------------------------------------------------------------
-m_voice = isorhythm.create_isorhythm(
-    ["C#6", "B-5", "A5", "G5", "F6", "E6", "D6", "C#6"], [2, 1, 1, 1, 1, 1, 1, 3]
-)
-
 # Set reference scale (A Major Phrygian) for inversion/transposition operations
 # ----------------------------------------------------------------------------------------------------------------------
 reference_scale = scale.ConcreteScale(
     pitches=["A4", "B-4", "C#5", "D5", "E5", "F5", "G5"]
 )
 
-# Create the complete M-voice using an additive process, and an inversion for the second half
+# Build core scale pattern
+# ----------------------------------------------------------------------------------------------------------------------
+basic_scale = isorhythm.create_isorhythm(
+    reference_scale.getPitches("C#6", "G5") + reference_scale.getPitches("F6", "C#6"), [2, 1, 1, 1, 1, 1, 1, 3]
+)
+
+# Build the complete m-voice
 # ----------------------------------------------------------------------------------------------------------------------
 m_voice = minimalism.additive_process(
-    m_voice, direction=minimalism.Direction.INWARD, step=[2, 1, 1]
+    basic_scale, direction=minimalism.Direction.INWARD, first_iteration=2
 )
-m_voice_inversion = transformations.scalar_inversion(m_voice, "C#6", reference_scale)
-m_voice.append(m_voice_inversion)
+m_voice.append(transformations.scalar_inversion(m_voice, "C#6", reference_scale))
 
-# Create the T-voice and the second M-voice
+# Create the t-voice and the second m-voice
 # ----------------------------------------------------------------------------------------------------------------------
 t_chord = ["A", "C", "E"]
 t_voice = tintinnabuli.create_t_voice(
