@@ -16,13 +16,14 @@ reference_scale = scale.ConcreteScale(
 # Build core scale pattern
 # ----------------------------------------------------------------------------------------------------------------------
 basic_scale = isorhythm.create_isorhythm(
-    reference_scale.getPitches("C#6", "G5") + reference_scale.getPitches("F6", "C#6"), [2, 1, 1, 1, 1, 1, 1, 3]
+    reference_scale.getPitches("C#6", "G5") + reference_scale.getPitches("F6", "C#6"),
+    [2, 1, 1, 1, 1, 1, 1, 3],
 )
 
 # Build the complete m-voice
 # ----------------------------------------------------------------------------------------------------------------------
 m_voice = minimalism.additive_process(
-    basic_scale, direction=minimalism.Direction.INWARD, first_iteration=2
+    basic_scale, direction=minimalism.Direction.INWARD, starting_iteration=2
 )
 m_voice.append(transformations.scalar_inversion(m_voice, "C#6", reference_scale))
 

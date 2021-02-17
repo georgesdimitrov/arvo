@@ -20,7 +20,7 @@ basic_scale = isorhythm.create_isorhythm(
 # ----------------------------------------------------------------------------------------------------------------------
 pattern_a = minimalism.additive_process(basic_scale)
 section_a = minimalism.additive_process(pattern_a)
-section_a.append(minimalism.subtractive_process(pattern_a, first_iteration=1))
+section_a.append(minimalism.subtractive_process(pattern_a, starting_iteration=1))
 
 # Build B section
 # ----------------------------------------------------------------------------------------------------------------------
@@ -28,7 +28,7 @@ pattern_b = minimalism.subtractive_process(
     basic_scale, direction=minimalism.Direction.BACKWARD
 )
 section_b = minimalism.additive_process(pattern_b)
-section_b.append(minimalism.subtractive_process(pattern_b, first_iteration=1))
+section_b.append(minimalism.subtractive_process(pattern_b, starting_iteration=1))
 
 # Build remaining sections
 # ----------------------------------------------------------------------------------------------------------------------
