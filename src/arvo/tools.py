@@ -1,3 +1,7 @@
+"""
+Convenient helper functions for quickly manipulating and combining music21 elements.
+"""
+
 import math
 import copy
 import numbers
@@ -146,14 +150,6 @@ def durations_to_stream(
     return post_stream
 
 
-def map_rhythms_to_stream(
-    original_stream,
-    durations: Sequence[Union[numbers.Number, duration.Duration, note.Note]],
-):
-    for i in range(len(durations)):
-        original_stream.flat.notes[i].duration = duration.Duration(durations[i])
-
-
 def merge_streams(*streams):
     post_stream = stream.Stream()
     for s in streams:
@@ -164,3 +160,4 @@ def merge_streams(*streams):
 def copy_key_signature(original_stream, new_stream):
     for key_signature in original_stream.getElementsByClass("KeySignature"):
         new_stream.insert(0, key_signature)
+    new_stream.sort()
