@@ -23,7 +23,7 @@ basic_scale = isorhythm.create_isorhythm(
 # Build the complete m-voice
 # ----------------------------------------------------------------------------------------------------------------------
 m_voice = minimalism.additive_process(
-    basic_scale, direction=minimalism.Direction.INWARD, starting_iteration=2
+    basic_scale, direction=minimalism.Direction.INWARD, iterations_start=2
 )
 m_voice.append(transformations.scalar_inversion(m_voice, "C#6", reference_scale))
 
