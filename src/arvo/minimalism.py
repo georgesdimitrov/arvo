@@ -87,7 +87,7 @@ def additive_process(
     repetitions_index = 0
 
     # Initialize function variables.
-    new_stream = stream.Stream()
+    post_stream = stream.Stream()
     original_notes = tools.stream_to_notes(original_stream, in_place=True)
     original_length = len(original_notes)
     iteration_index = 0
@@ -141,10 +141,10 @@ def additive_process(
                         current_stream.append(copy.deepcopy(original_notes[i]))
                 else:
                     for i in range(position1, position2):
-                        current_stream.append(copy.deepcopy(original_notes[i]))
+                         current_stream.append(copy.deepcopy(original_notes[i]))
 
         # Add iteration to final sequence.
-        new_stream.append(current_stream)
+        tools.append_stream(post_stream, current_stream)
 
         # Increment iteration index, stopping if iterations parameter has been set and reached.
         iteration_index += 1
@@ -168,7 +168,7 @@ def additive_process(
         elif step_mode == StepMode.ABSOLUTE:
             current_length = step_sequence[step_index]
 
-    return new_stream.flat
+    return post_stream
 
 
 def subtractive_process(
@@ -224,7 +224,7 @@ def subtractive_process(
     repetitions_index = 0
 
     # Initialize function variables.
-    new_stream = stream.Stream()
+    post_stream = stream.Stream()
     original_notes = tools.stream_to_notes(original_stream, in_place=True)
     original_length = len(original_notes)
     iteration_index = -1
@@ -283,7 +283,7 @@ def subtractive_process(
                         current_stream.append(copy.deepcopy(original_notes[i]))
 
         # Add iteration to final sequence.
-        new_stream.append(current_stream)
+        tools.append_stream(post_stream, current_stream)
 
         # Increment iteration index, stopping if iterations parameter has been set and reached.
         iteration_index += 1
@@ -307,7 +307,7 @@ def subtractive_process(
         elif step_mode == StepMode.ABSOLUTE:
             current_length = step_sequence[step_index]
 
-    return new_stream.flat
+    return post_stream
 
 
 # !! scanning_process is in a development state !!
