@@ -11,7 +11,7 @@ from music21 import duration
 from music21 import note
 from music21 import stream
 from music21 import pitch
-
+from music21 import meter
 
 __all__ = [
     "stream_to_part",
@@ -24,24 +24,34 @@ __all__ = [
 ]
 
 
-def stream_to_part(
-    original_stream: stream.Stream, in_place: bool = False
-) -> stream.Stream:
-    """Flattens all notes in a Stream to a Part.
+def stream_to_part(original_stream: stream.Stream) -> stream.Stream:
+    """Converts a stream to a Part
 
     Args:
-        original_stream: stream to flatten.
+        original_stream: stream to convert.
 
     Returns:
-        Flattened part.
+        Converted stream.
     """
-    new_part = stream.Part()
-    for n in original_stream.flat.notes:
-        if in_place:
-            new_part.insert(n.offset, n)
-        else:
-            new_part.insert(n.offset, copy.deepcopy(n))
-    return new_part
+    post_stream = stream.Part()
+    for element in original_stream.elements:
+        post_stream.append(element)
+    return post_stream
+
+
+def stream_to_voice(original_stream: stream.Stream) -> stream.Stream:
+    """Converts a stream to a Voice
+
+    Args:
+        original_stream: stream to convert.
+
+    Returns:
+        Converted stream.
+    """
+    post_stream = stream.Voice()
+    for element in original_stream.elements:
+        post_stream.append(element)
+    return post_stream
 
 
 def stream_to_notes(
@@ -150,14 +160,43 @@ def durations_to_stream(
     return post_stream
 
 
-def merge_streams(*streams):
+def merge_streams(
+    *streams: stream.Stream, make_measures: bool = False
+) -> stream.Stream:
     post_stream = stream.Stream()
     for s in streams:
-        post_stream.insert(0, stream_to_part(s))
+        post_stream.insert(0, s)
+    if make_measures:
+        post_stream.makeMeasures(inPlace=True, finalBarline=None)
     return post_stream
+
+
+def merge_voices(*streams: stream.Stream, make_measures: bool = False) -> stream.Stream:
+    post_stream = stream.Stream()
+    for s in streams:
+        if not isinstance(s, stream.Voice):
+            s = stream_to_voice(s)
+        post_stream.insert(0, s)
+    if make_measures:
+        post_stream.makeMeasures(inPlace=True, finalBarline=None)
+    return post_stream
+
+
+def append_stream(original_stream: stream.Stream, *streams: stream.Stream, debug=False):
+    for s in streams:
+        h_offset = original_stream.highestTime
+        for element in s.elements:
+            original_stream.insert(element.offset + h_offset, element)
 
 
 def copy_key_signature(original_stream, new_stream):
     for key_signature in original_stream.getElementsByClass("KeySignature"):
         new_stream.insert(0, key_signature)
     new_stream.sort()
+
+
+def simplify_stream(original_stream: stream.Stream, in_place: bool = False):
+    post_stream = original_stream if in_place else copy.deepcopy(original_stream)
+    post_stream = post_stream.flat
+    post_stream.makeMeasures()
+    return post_stream
