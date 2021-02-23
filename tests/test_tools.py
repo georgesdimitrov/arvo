@@ -38,7 +38,7 @@ def durations_stream():
     ],
 )
 def test_pitches_to_stream(pitches_stream, sequence):
-    result = tools.pitches_to_stream(sequence)
+    result = tools.notes_to_stream(sequence)
     assert tools.stream_to_notes(result) == tools.stream_to_notes(pitches_stream)
 
 
