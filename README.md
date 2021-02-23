@@ -17,7 +17,7 @@ It also contains the following helper modules:
 * **tools**: Convenient helper functions for quickly manipulating and combining music21 elements.
 
 ### Samples
-The samples directory contains sample pieces created with the music21 and arvo, including recreations of some famous pieces of the repertoire. Each subfolder contains a python file with the code, a music xml output, and a pdf of the piece as rendered in MuseScore.
+The samples directory contains sample pieces created with the music21 and arvo libraries, including recreations of some famous pieces of the repertoire. Each subfolder contains a python file with the code, a music xml output, and a pdf of the piece as rendered in MuseScore.
 
 It currently contains the following samples:
 
