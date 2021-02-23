@@ -10,6 +10,7 @@ from music21 import stream
 from music21 import duration
 from music21 import pitch
 from music21 import note
+from music21 import chord
 
 from arvo import tools
 
@@ -19,10 +20,10 @@ __all__ = ["create_isorhythm"]
 
 def create_isorhythm(
     pitches: Union[
-        stream.Stream, Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note]]
+        stream.Stream, Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note, chord.Chord]]
     ],
     durations: Union[
-        stream.Stream, Sequence[Union[numbers.Number, duration.Duration, note.Note]]
+        stream.Stream, Sequence[Union[numbers.Number, duration.Duration, note.Note, chord.Chord]]
     ],
     length: Optional[int] = None,
 ) -> stream.Stream:
@@ -44,7 +45,7 @@ def create_isorhythm(
 
     # Create pitches list
     if not isinstance(pitches, stream.Stream):
-        pitches = tools.pitches_to_stream(pitches)
+        pitches = tools.notes_to_stream(pitches)
     color_list = []
     for element in pitches.flat.notes:
         color_list.append(element)
