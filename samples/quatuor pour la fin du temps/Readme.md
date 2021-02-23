@@ -1,6 +1,6 @@
 # Olivier Messiaen - Quatuor pour la fin du temps (Liturgie de Cristal)
 
-This example showcases the following **arvo** modules:
+This example showcases the following **arvo** module:
 
 * **isorhythm** for creating the isorhythmic process
 
