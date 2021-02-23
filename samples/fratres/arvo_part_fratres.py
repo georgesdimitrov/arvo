@@ -63,7 +63,7 @@ tools.append_stream(
 def right_hand_interlude():
     s = stream.Stream()
     s.append(meter.TimeSignature("6/4"))
-    s.append(clef.FClef())
+    s.append(clef.BassClef())
     s.repeatAppend(chord.Chord(["A1", "E2", "A2"], duration=duration.Duration(6)), 2)
     s.makeMeasures(inPlace=True, finalBarline=None)
     return s
@@ -94,7 +94,7 @@ def left_hand_interlude():
 right_hand = stream.Part()
 left_hand = stream.Part()
 
-left_hand.clef = clef.GClef()
+left_hand.clef = clef.TrebleClef()
 
 # Main Loop to build the nine sections
 for section_index in range(8):
@@ -116,7 +116,7 @@ for section_index in range(8):
     # Append right hand interlude
     tools.append_stream(right_hand, right_hand_interlude())
     if section_index < 6:
-        right_hand.append(clef.GClef())  # Add treble clef except for last section
+        right_hand.append(clef.TrebleClef())  # Add treble clef except for last section
 
     # Left hand
     # ------------------------------------------------------------------------------------------------------------------
@@ -164,18 +164,18 @@ for section_index in range(8):
 
     # Append left hand interlude
     if section_index < 3:
-        left_hand.append(clef.FClef())
+        left_hand.append(clef.BassClef())
     tools.append_stream(left_hand, left_hand_interlude())
     if section_index < 2:
-        left_hand.append(clef.GClef())
+        left_hand.append(clef.TrebleClef())
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Build final score
 # ----------------------------------------------------------------------------------------------------------------------
 
-score = stream.Score()
 right_hand.makeMeasures(inPlace=True)
+score = stream.Score()
 score.insert(0, right_hand)
 score.insert(0, left_hand)
 staffGroup1 = layout.StaffGroup(
