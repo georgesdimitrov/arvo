@@ -12,19 +12,20 @@ from music21 import note
 from music21 import stream
 from music21 import pitch
 from music21 import meter
+from music21 import chord
 
 __all__ = [
     "stream_to_part",
     "stream_to_notes",
     "stream_to_pitches",
-    "pitches_to_stream",
+    "notes_to_stream",
     "durations_to_stream",
     "merge_streams",
     "copy_key_signature",
 ]
 
 
-def stream_to_part(original_stream: stream.Stream) -> stream.Stream:
+def stream_to_part(original_stream: stream.Stream) -> stream.Part:
     """Converts a stream to a Part
 
     Args:
@@ -35,11 +36,11 @@ def stream_to_part(original_stream: stream.Stream) -> stream.Stream:
     """
     post_stream = stream.Part()
     for element in original_stream.elements:
-        post_stream.append(element)
+        post_stream.insert(element.offset, element)
     return post_stream
 
 
-def stream_to_voice(original_stream: stream.Stream) -> stream.Stream:
+def stream_to_voice(original_stream: stream.Stream) -> stream.Voice:
     """Converts a stream to a Voice
 
     Args:
@@ -107,8 +108,8 @@ def stream_to_pitches(
     return pitches
 
 
-def pitches_to_stream(
-    pitches: Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note]]
+def notes_to_stream(
+    pitches: Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note, chord.Chord]]
 ) -> stream.Stream:
     """Creates a stream from a sequence of pitches.
 
@@ -128,7 +129,7 @@ def pitches_to_stream(
             if n.pitch.accidental.name == "natural":
                 n.pitch.accidental = None
             post_stream.append(n)
-        elif isinstance(p, note.Note):
+        elif isinstance(p, note.Note) or isinstance(p, chord.Chord):
             post_stream.append(p)
     return post_stream
 
