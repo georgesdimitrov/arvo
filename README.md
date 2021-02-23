@@ -21,6 +21,6 @@ The samples directory contains sample pieces created with the music21 and arvo, 
 
 It currently contains the following samples:
 
-* **Olivier Messiaen - *Quatuor pour la fin du temps*** (isorhythm)
-* **Arvo Pärt - *Fratres* (minimalism, transformations**, tintinnabuli)
-* **Frederic Rzewski - *Coming Together*** (minimalism, transformations)
+* **Olivier Messiaen** - *Quatuor pour la fin du temps* (isorhythm)
+* **Arvo Pärt** - *Fratres* (minimalism, transformations, tintinnabuli)
+* **Frederic Rzewski** - *Coming Together* (minimalism, transformations)
