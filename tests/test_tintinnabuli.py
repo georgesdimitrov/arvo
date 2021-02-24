@@ -2,7 +2,6 @@ import pytest
 from music21 import converter
 from music21 import chord
 from arvo import tintinnabuli
-from arvo import tools
 
 
 @pytest.fixture
@@ -20,7 +19,7 @@ def c_major_chord():
 def test_create_t_voice(major_scale, c_major_chord):
     result = tintinnabuli.create_t_voice(major_scale, c_major_chord)
     intended_result = converter.parse("tinyNotation: E E G G c c c e")
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 @pytest.mark.parametrize(
@@ -32,7 +31,7 @@ def test_create_t_voice(major_scale, c_major_chord):
 )
 def test_create_t_voice_position(major_scale, c_major_chord, position, intended_result):
     result = tintinnabuli.create_t_voice(major_scale, c_major_chord, position=position)
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 @pytest.mark.parametrize(
@@ -58,19 +57,19 @@ def test_create_t_voice_direction(
     result = tintinnabuli.create_t_voice(
         major_scale, c_major_chord, direction=direction
     )
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 def test_create_t_voice_pitch_list(major_scale):
     result = tintinnabuli.create_t_voice(major_scale, ("C", "D", "A"))
     intended_result = converter.parse("tinyNotation: D A A A A c c d")
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 def test_create_t_voice_pitch_list_numeric(major_scale):
     result = tintinnabuli.create_t_voice(major_scale, (0, 2, 9))
     intended_result = converter.parse("tinyNotation: D A A A A c c d")
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 @pytest.mark.parametrize(
@@ -82,4 +81,4 @@ def test_create_t_voice_pitch_list_numeric(major_scale):
 )
 def test_create_t_voice_tmode(major_scale, t_mode, intended_result):
     result = tintinnabuli.create_t_voice(major_scale, ("C#", "E", "A"), t_mode=t_mode)
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)

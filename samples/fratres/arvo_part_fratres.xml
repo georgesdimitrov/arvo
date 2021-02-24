@@ -8,7 +8,7 @@
   <identification>
     <creator type="composer">Arvo Pärt</creator>
     <encoding>
-      <encoding-date>2021-02-22</encoding-date>
+      <encoding-date>2021-02-24</encoding-date>
       <software>music21 v.6.5.0</software>
     </encoding>
   </identification>
@@ -24,16 +24,16 @@
       <group-symbol>brace</group-symbol>
       <group-barline>yes</group-barline>
     </part-group>
-    <score-part id="P2628293c5e40c8b28654bdc80d55a22e">
+    <score-part id="Pbacb64323a1fbc807d3c9a99019fc406">
       <part-name />
     </score-part>
-    <score-part id="Pc1535ff3466a6697827a588400061316">
+    <score-part id="P7aeb31b5f84e73e74a855d19b58d65da">
       <part-name />
     </score-part>
     <part-group number="1" type="stop" />
   </part-list>
   <!--=========================== Part 1 ===========================-->
-  <part id="P2628293c5e40c8b28654bdc80d55a22e">
+  <part id="Pbacb64323a1fbc807d3c9a99019fc406">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>
@@ -772,6 +772,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -845,6 +846,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -1554,6 +1556,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -1627,6 +1630,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -2320,6 +2324,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -2393,6 +2398,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -3104,6 +3110,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -3177,6 +3184,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -3904,6 +3912,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -3977,6 +3986,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -4674,6 +4684,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -4747,6 +4758,7 @@
         </time>
         <clef>
           <sign>G</sign>
+          <line>2</line>
         </clef>
       </attributes>
       <note>
@@ -5446,6 +5458,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -6243,6 +6256,7 @@
         </time>
         <clef>
           <sign>F</sign>
+          <line>4</line>
         </clef>
       </attributes>
       <note>
@@ -6312,7 +6326,7 @@
     </measure>
   </part>
   <!--=========================== Part 2 ===========================-->
-  <part id="Pc1535ff3466a6697827a588400061316">
+  <part id="P7aeb31b5f84e73e74a855d19b58d65da">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>

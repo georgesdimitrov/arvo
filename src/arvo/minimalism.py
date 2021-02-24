@@ -13,12 +13,18 @@ from arvo import sequences
 from arvo import tools
 
 
-__all__ = ["Direction", "StepMode", "additive_process", "subtractive_process", "scanning_process"]
+__all__ = [
+    "Direction",
+    "StepMode",
+    "additive_process",
+    "subtractive_process",
+    "scanning_process",
+]
 
 
 class Direction(enum.Enum):
     """
-    Determines the direction of minimalist processes.
+    Determines the direction of minimalism processes.
 
     FORWARD starts the process from the beginning of the stream;
     BACKWARD starts the process from the end of the stream;
@@ -33,6 +39,14 @@ class Direction(enum.Enum):
 
 
 class StepMode(enum.Enum):
+    """
+    Determines the step mode for minimalism processes.
+
+    In RELATIVE mode, step determines the amount of elements added each iteration relative to the
+      previous iteration.
+    In ABSOLUTE mode, step determines the amount of elements added each iteration relative to
+      the starting point.
+    """
     RELATIVE = 1
     ABSOLUTE = 2
 
@@ -54,18 +68,20 @@ def additive_process(
     Args:
         original_stream: The original stream to process.
         direction: Optional; Determines the direction of the additive process. Default is FORWARD.
-        step_value: Optional; Determines the number of elements added each iteration. Default is 1. If provided a sequence of
-          numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each iteration,
-          looping if it reaches the end of the sequence.
-        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the amount of elements
-          added each iteration relative to the previous iteration. In ABSOLUTE mode, step determines the amount
-          of elements added each iteration relative to the starting point.
-        repetitions: Optional; Determines the number of times each segment is repeated before moving to
-          the next iteration. Default is 1. If provided a sequence of numbers (for example, sequences.PRIMES), the
-          repetitions parameter will cycle through the sequence each iteration, looping if it reaches the end of the
+        step_value: Optional; Determines the number of elements added each iteration. Default is
+          1. If provided a sequence of numbers (for example, sequences.PRIMES), the step parameter
+          will cycle through the sequence each iteration, looping if it reaches the end of the
           sequence.
-        iterations_start: Optional; Starts the process at the specified iteration. By default, additive processes 
-          start at iteration 1.
+        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the
+          amount of elements added each iteration relative to the previous iteration. In
+          ABSOLUTE mode, step determines the amount of elements added each iteration relative
+          to the starting point.
+        repetitions: Optional; Determines the number of times each segment is repeated before
+          moving to the next iteration. Default is 1. If provided a sequence of numbers (for
+          example, sequences.PRIMES), the repetitions parameter will cycle through the sequence
+          each iteration, looping if it reaches the end of the sequence.
+        iterations_start: Optional; Starts the process at the specified iteration. By default,
+          additive processes start at iteration 1.
         iterations_end: Optional; Stops the process at the specified iteration. By default, the
           process runs until the original stream is completed or an infinite loop is detected.
     Returns:
@@ -88,7 +104,7 @@ def additive_process(
 
     # Initialize function variables.
     post_stream = stream.Stream()
-    original_notes = tools.stream_to_notes(original_stream, in_place=True)
+    original_notes = original_stream.flat.notes
     original_length = len(original_notes)
     iteration_index = 0
     position1 = 0
@@ -128,10 +144,15 @@ def additive_process(
                 position1 = 0
             if position2 > original_length:
                 position2 = original_length
-            if iterations_end is None and position1 == 0 and position2 == original_length:
+            if (
+                iterations_end is None
+                and position1 == 0
+                and position2 == original_length
+            ):
                 completed = True
 
-        # Build the current iteration, repeating the segment the amount of times defined by the repetitions sequence.
+        # Build the current iteration, repeating the segment the amount of times defined
+        # #by the repetitions sequence.
         if iterations_start is None or iteration_index + 1 >= iterations_start:
             for _ in range(repetitions_sequence[repetitions_index]):
                 if direction == Direction.INWARD:
@@ -141,7 +162,7 @@ def additive_process(
                         current_stream.append(copy.deepcopy(original_notes[i]))
                 else:
                     for i in range(position1, position2):
-                         current_stream.append(copy.deepcopy(original_notes[i]))
+                        current_stream.append(copy.deepcopy(original_notes[i]))
 
         # Add iteration to final sequence.
         tools.append_stream(post_stream, current_stream)
@@ -188,21 +209,24 @@ def subtractive_process(
     Args:
         stream: The original stream to process.
         direction: Optional; The direction of the subtractive process. Default is Direction.FORWARD.
-        step_value: Optional; Determines the number of elements subtracted each iteration. Default is 1. If provided a
-         sequence of numbers (for example, sequences.PRIMES), the step parameter will cycle through the sequence each
-         iteration, looping if it reaches the end of the sequence.
-        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the amount of elements
-          subtracted each iteration relative to the previous iteration. In ABSOLUTE mode, step determines the amount
-          of elements subtracted each iteration relative to the starting point.
-        repetitions: Optional; Determines the number of times each segment is repeated before moving to
-          the next iteration. Default is 1. If provided a sequence of numbers (for example, sequences.PRIMES), the
-          repetitions parameter will cycle through the sequence each iteration, looping if it reaches the end of the
-          sequence.
-        iterations_start: Optional; Starts the process at the specified iteration. By default subtractive processes
-          start at iteration 0.
-        iterations_end: Optional; Determines the number of iterations to do before the process stops. By default, the
-          process runs until the original stream disappears. Note that the subtractive process starts with the complete
-          stream, so the first iteration results in the second segment.
+        step_value: Optional; Determines the number of elements subtracted each iteration. Default
+         is 1. If provided a sequence of numbers (for example, sequences.PRIMES), the step
+         parameter will cycle through the sequence each iteration, looping if it reaches the
+         end of the sequence.
+        step_mode: Optional; Determines the step mode. In RELATIVE mode, step determines the amount
+          of elements subtracted each iteration relative to the previous iteration. In ABSOLUTE
+          mode, step determines the amount of elements subtracted each iteration relative to the
+          starting point.
+        repetitions: Optional; Determines the number of times each segment is repeated before moving
+          to the next iteration. Default is 1. If provided a sequence of numbers (for example,
+          sequences.PRIMES), the repetitions parameter will cycle through the sequence each
+          iteration, looping if it reaches the end of the sequence.
+        iterations_start: Optional; Starts the process at the specified iteration. By default
+          subtractive processes start at iteration 0.
+        iterations_end: Optional; Determines the number of iterations to do before the process
+          stops. By default, the process runs until the original stream disappears. Note that the
+          subtractive process starts with the complete stream, so the first iteration results in
+          the second segment.
 
     Returns:
         The new stream created by the subtractive process.
@@ -225,7 +249,7 @@ def subtractive_process(
 
     # Initialize function variables.
     post_stream = stream.Stream()
-    original_notes = tools.stream_to_notes(original_stream, in_place=True)
+    original_notes = original_stream.flat.notes
     original_length = len(original_notes)
     iteration_index = -1
     position1 = 0
@@ -267,10 +291,15 @@ def subtractive_process(
                 position1 = 0
             if position2 >= original_length:
                 position2 = original_length
-            if iterations_end is None and position1 == 0 and position2 == original_length:
+            if (
+                iterations_end is None
+                and position1 == 0
+                and position2 == original_length
+            ):
                 completed = True
 
-        # Build the current iteration, repeating the segment the amount of times defined by the repetitions sequence.
+        # Build the current iteration, repeating the segment the amount of times defined
+        # by the repetitions sequence.
         if iterations_start is None or iteration_index + 1 >= iterations_start:
             for _ in range(repetitions_sequence[repetitions_index]):
                 if direction is Direction.OUTWARD:
@@ -312,7 +341,7 @@ def subtractive_process(
 
 # !! scanning_process is in a development state !!
 def scanning_process(
-    stream: stream.Stream,
+    original_stream: stream.Stream,
     direction: Direction = Direction.FORWARD,
     step_value: Union[int, Sequence[int]] = 1,
     step_mode: StepMode = StepMode.RELATIVE,
@@ -324,24 +353,27 @@ def scanning_process(
     """Applies a scanning process to a stream.
 
     Builds a new stream by applying an scanning process to the original stream. Only note and
-    chord objects are included. Provided a stream of 6 elements, with a LINEAR sequence in FORWARD direction, with
-    a window_size of 2, this function will return a stream composed of: 12|23|34|45|56|6. With a PRIMES
-    sequence, the result would be 12|34|6 (sequence = [0, 2, 3, 5, 7...]).
+    chord objects are included. Provided a stream of 6 elements, with a LINEAR sequence in FORWARD
+    direction, with a window_size of 2, this function will return a stream composed of:
+    12|23|34|45|56|6. With a PRIMES sequence, the result would be 12|34|6 (sequence = [0, 2, 3,
+    5, 7...]).
     TODO: include inward/outward directions, repetitions and iterations options
     TODO: include list[int] option for window_size
 
     Args:
-        stream: The original stream to process.
+        original_stream: The original stream to process.
         direction: Optional; The direction of the scanning process. Default is Direction.FORWARD.
-        sequence: Optional; Determines the number sequence governing the starting position of the window for each
-          step of the scanning process. Default is sequences.LINEAR ([1,2,3,4,5,6,7...]).
-        window_size: Options; Determines the size of the "window" that is scanning the original stream.
-        repetitions: Optional; Determines the number of times each segment is repeated before moving to
-          the next step in the sequence. Default is 1.
+        sequence: Optional; Determines the number sequence governing the starting position of the
+          window for each step of the scanning process.
+          Default is sequences.LINEAR ([1,2,3,4,5,6,7...]).
+        window_size: Options; Determines the size of the "window" that is scanning the original
+          stream.
+        repetitions: Optional; Determines the number of times each segment is repeated before
+          moving to the next step in the sequence. Default is 1.
         steps: Optional; Stops the additive process after n steps in the sequence. By default,
           it runs until the original stream is completed.
-        iterations_start: Optional; Starts the process at the specified iteration. By default, scanning processes 
-          start at iteration 1.
+        iterations_start: Optional; Starts the process at the specified iteration. By default,
+          scanning processes start at iteration 1.
         iterations_end: Optional; Stops the process at the specified iteration. By default, the
           process runs until the original stream is entierly traversed.
 
@@ -350,8 +382,8 @@ def scanning_process(
         The new stream created by the subtractive process.
     """
 
-    new_stream = stream.Stream()
-    original_notes = stream.flat.notes
+    post_stream = stream.Stream()
+    original_notes = original_stream.flat.notes
     original_length = len(original_notes)
     progression_index = 0
     start_position = 0
@@ -372,11 +404,11 @@ def scanning_process(
             end_position = original_length
         for i in range(start_position, end_position):
             current_stream.append(copy.deepcopy(original_notes[i]))
-        new_stream.append(current_stream)
+        post_stream.append(current_stream)
         progression_index += 1
-        if isinstance(interval, int):
-            current_position = progression_index * interval
+        if isinstance(step_value, int):
+            current_position = progression_index * step_value
 
-        current_position = sequence(progression_index)
+        #current_position = sequence(progression_index)
 
-    return new_stream
+    return post_stream

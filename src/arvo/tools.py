@@ -2,10 +2,8 @@
 Convenient helper functions for quickly manipulating and combining music21 elements.
 """
 
-import copy
 import numbers
-from typing import Union, Sequence, List, Optional, Type
-
+from typing import Union, Sequence, Optional, Type
 from music21 import duration
 from music21 import note
 from music21 import stream
@@ -14,11 +12,10 @@ from music21 import chord
 
 __all__ = [
     "convert_stream",
-    "stream_to_notes",
-    "stream_to_pitches",
     "notes_to_stream",
     "durations_to_stream",
     "merge_streams",
+    "append_stream"
 ]
 
 
@@ -45,59 +42,6 @@ def convert_stream(
     for element in original_stream.elements:
         post_stream.append(element)
     return post_stream
-
-
-def stream_to_notes(
-    original_stream: stream.Stream, in_place: bool = False
-) -> List[note.Note]:
-    """Returns a list of all notes contained in a Stream
-
-    Args:
-        original_stream: Stream to process.
-        in_place: Optional; If True, returns references to Note objects in the original stream, else
-          returns new copies. Default is True.
-
-    Returns:
-        The list of Note objects.
-
-    """
-    notes = []
-    for note_ in original_stream.flat.notes:
-        if in_place:
-            notes.append(note_)
-        else:
-            notes.append(copy.deepcopy(note_))
-    return notes
-
-
-def stream_to_pitches(
-    original_stream: stream.Stream, in_place: bool = False
-) -> List[pitch.Pitch]:
-    """Returns a list of all pitches contained in a Stream
-
-    Args:
-        original_stream: Stream to process.
-        in_place: Optional; If True, returns references to Pitch objects in the original stream,
-          else returns new copies. Default is True.
-
-    Returns:
-        The list of Pitch objects.
-
-    """
-    pitches = []
-    for note_ in stream_to_notes(original_stream, in_place=in_place):
-        if note_.isChord:
-            element_pitches = note_.pitches
-        else:
-            element_pitches = [note_.pitch]
-
-        for pitch_ in element_pitches:
-            if in_place:
-                pitches.append(pitch_)
-            else:
-                pitches.append(copy.deepcopy(pitch_))
-
-    return pitches
 
 
 def notes_to_stream(

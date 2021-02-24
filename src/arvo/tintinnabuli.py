@@ -1,4 +1,8 @@
-from copy import deepcopy
+"""
+
+Functions for generating Arvo Pärt-inspired tintinnabuli.
+
+"""
 import enum
 from typing import Union, Sequence
 
@@ -7,12 +11,13 @@ from music21 import chord
 from music21 import pitch
 from music21 import note
 
-from arvo import tools
-
 
 __all__ = ["Direction", "TMode", "create_t_voice"]
 
 class Direction(enum.Enum):
+    """
+    Determines the direction of the tintinnabuli line.
+    """
     UP = 1
     DOWN = 2
     UP_ALTERNATE = 3
@@ -20,6 +25,10 @@ class Direction(enum.Enum):
 
 
 class TMode(enum.Enum):
+    """
+    Determines the way the "next" note is calculated within the t-voice pitch
+      classes for notes with the same note name.
+    """
     DIATONIC = 1
     CHROMATIC = 2
 
@@ -35,15 +44,15 @@ def create_t_voice(
 
     Args:
         m_voice: The stream containing the melody to use as the basis for the tintinnabuli.
-        t_chord: A list of pitch-classes to use as the basis of the t-voice. Accepts letter names or numeric pitch
-          classes. Can also be a music21 Chord object.
+        t_chord: A list of pitch-classes to use as the basis of the t-voice. Accepts letter names or
+          numeric pitch classes. Can also be a music21 Chord object.
         position: Optional; The position of the t-voice. Default is 1.
         direction: Optional; The direction of the tintinnabuli process. Default is Direction.UP.
-        t_mode: Optional; Determines the way the "next" note is calculated within the t-voice pitch classes for notes
-          with the same note name. For example if the m-voice contains an Eb and the t-chord is C major: TMode.DIATONIC
-          will consider that Eb and E are the same note, and will return G as the first "diatonic" t-note above.
-          TMode.CHROMATIC ignores this and simply returns E as the first "chromatic" t-note above. Default is
-          TMode.DIATONIC.
+        t_mode: Optional; Determines the way the "next" note is calculated within the t-voice pitch
+          classes for notes with the same note name. For example if the m-voice contains an Eb and
+          the t-chord is C major: TMode.DIATONIC will consider that Eb and E are the same note, and
+          will return G as the first "diatonic" t-note above. TMode.CHROMATIC ignores this and
+          simply returns E as the first "chromatic" t-note above. Default is TMode.DIATONIC.
 
     Returns:
         A stream that contains the new t-voice.
@@ -58,13 +67,13 @@ def create_t_voice(
         t_pitches = t_chord
     t_pitch_classes = []
     t_steps = []
-    for p in t_pitches:
-        if isinstance(p, str):
-            p = pitch.Pitch(p)
-        elif isinstance(p, int):
-            p = pitch.Pitch(p)
-        t_pitch_classes.append(p.pitchClass)
-        t_steps.append(p.step)
+    for pitch_ in t_pitches:
+        if isinstance(pitch_, str):
+            pitch_ = pitch.Pitch(pitch_)
+        elif isinstance(pitch_, int):
+            pitch_ = pitch.Pitch(pitch_)
+        t_pitch_classes.append(pitch_.pitchClass)
+        t_steps.append(pitch_.step)
 
     # Determine starting pitch direction
     if direction is Direction.DOWN or direction is Direction.DOWN_ALTERNATE:
@@ -74,7 +83,7 @@ def create_t_voice(
 
     temp_pitch = pitch.Pitch()
 
-    for m_note in tools.stream_to_notes(m_voice, in_place=True):
+    for m_note in m_voice.flat.notes:
         temp_pitch.ps = m_note.pitch.ps
         position_index = 0
         while position_index < position:

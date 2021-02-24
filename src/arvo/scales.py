@@ -22,13 +22,13 @@ class AbstractPentatonicScale(music21.scale.AbstractScale):
         if mode in (None, 1, "major", "Major"):
             interval_list = src_list
             self.tonicDegree = 1
-        elif mode in (2):
+        elif mode == 2:
             interval_list = src_list[1:] + src_list[:1]
             self.tonicDegree = 1
-        elif mode in (3):
+        elif mode == 3:
             interval_list = src_list[2:] + src_list[:2]
             self.tonicDegree = 1
-        elif mode in (4):
+        elif mode == 4:
             interval_list = src_list[3:] + src_list[:3]
             self.tonicDegree = 1
         elif mode in (5, "minor", "Minor"):

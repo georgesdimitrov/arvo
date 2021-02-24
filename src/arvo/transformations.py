@@ -2,13 +2,11 @@
 Module for transformations such as transposition and inversion.
 """
 import copy
-from typing import Optional, Union, Sequence
+from typing import Union
 
 from music21 import pitch
 from music21 import scale
 from music21 import stream
-
-from src.arvo import tools
 
 __all__ = ["scalar_transposition", "scalar_inversion", "octave_shift"]
 
@@ -25,10 +23,12 @@ def scalar_transposition(
 
     Args:
         original_stream: The stream to process.
-        steps: The amount of steps to transpose. Positive values transpose up, negative values transpose down.
-        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is used.
-        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
-          object is returned.
+        steps: The amount of steps to transpose. Positive values transpose up, negative values
+          transpose down.
+        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale
+          is used.
+        in_place: Optional; If true, the operation is done in place on the original stream. By
+          default, a new Stream object is returned.
 
     Returns:
         The transposed stream.
@@ -37,8 +37,8 @@ def scalar_transposition(
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
-    for p in tools.stream_to_pitches(post_stream, in_place=True):
-        _transpose_pitch_in_scale_space(p, steps, reference_scale)
+    for pitch_ in post_stream.pitches:
+        _transpose_pitch_in_scale_space(pitch_, steps, reference_scale)
 
     return post_stream
 
@@ -54,9 +54,10 @@ def scalar_inversion(
     Args:
         original_stream: The stream to process.
         inversion_axis: The pitch around which to execute the inversion.
-        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is used.
-        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
-          object is returned.
+        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is
+          used.
+        in_place: Optional; If true, the operation is done in place on the original stream. By
+          default, a new Stream object is returned.
 
     Returns:
         The inverted stream.
@@ -69,9 +70,13 @@ def scalar_inversion(
         inversion_axis = pitch.Pitch(inversion_axis)
 
     # Invert all individual pitches
-    for p in tools.stream_to_pitches(post_stream, in_place=True):
-        distance_from_axis = _get_scale_distance(inversion_axis, p, reference_scale)
-        _transpose_pitch_in_scale_space(p, distance_from_axis * -2, reference_scale)
+    for pitch_ in post_stream.pitches:
+        distance_from_axis = _get_scale_distance(
+            inversion_axis, pitch_, reference_scale
+        )
+        _transpose_pitch_in_scale_space(
+            pitch_, distance_from_axis * -2, reference_scale
+        )
 
     return post_stream
 
@@ -80,12 +85,12 @@ def retrograde(
     original_stream: stream.Stream,
     in_place: bool = False,
 ) -> stream.Stream:
-    """ Performs a retrograde operation on a Stream.
+    """Performs a retrograde operation on a Stream.
 
     Args:
         original_stream: The Stream to process.
-        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
-          object is returned.
+        in_place: Optional; If true, the operation is done in place on the original stream. By
+          default, a new Stream object is returned.
 
     Returns:
         The reversed Stream.
@@ -94,28 +99,35 @@ def retrograde(
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Extract list of notes and clear stream of bars and notes
-    notes = tools.stream_to_notes(post_stream, in_place=True)
+    notes = list(post_stream.flat.notes)
     post_stream.removeByClass("Barline")
     post_stream.removeByClass("Measure")
     post_stream.remove(notes, recurse=True)
 
-    # Put back notes in the stream in reverse order
-    for n in reversed(notes):
-        post_stream.append(n)
+    # Build new stream of notes in reverse order
+    reverse_stream = stream.Stream()
+    for note_ in reversed(notes):
+        reverse_stream.append(note_)
+
+    # Put back notes in the stream
+    for note_ in reverse_stream.notes:
+        post_stream.insert(note_.offset, note_)
 
     post_stream.sort()
+    #post_stream.makeMeasures(inPlace=True)
 
     return post_stream
 
 
 def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False):
-    """ Transpooses a Stream up or down by a number of octaves
+    """Transpooses a Stream up or down by a number of octaves
 
     Args:
         original_stream: Stream to process.
-        octave_interval: The octave shift. Postive numbers transpose up, negative numbers transpose down.
-        in_place: Optional; If true, the operation is done in place on the original stream. By default, a new Stream
-          object is returned.
+        octave_interval: The octave shift. Postive numbers transpose up, negative numbers transpose
+          down.
+        in_place: Optional; If true, the operation is done in place on the original stream. By
+          default, a new Stream object is returned.
 
     Returns:
         The transposed Stream.
@@ -124,8 +136,8 @@ def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
-    for p in tools.stream_to_pitches(post_stream, in_place=True):
-        p.ps += 12 * octave_interval
+    for pitch_ in post_stream.pitches:
+        pitch_.ps += 12 * octave_interval
 
     return post_stream
 

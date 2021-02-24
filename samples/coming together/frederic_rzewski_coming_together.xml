@@ -8,7 +8,7 @@
   <identification>
     <creator type="composer">Frederic Rzewski</creator>
     <encoding>
-      <encoding-date>2021-02-17</encoding-date>
+      <encoding-date>2021-02-24</encoding-date>
       <software>music21 v.6.5.0</software>
     </encoding>
   </identification>
@@ -19,12 +19,12 @@
     </scaling>
   </defaults>
   <part-list>
-    <score-part id="P07fab99cc70fdb3d7c5792d55a2b999a">
+    <score-part id="P76be7fe7ffac502b38051519627c0e88">
       <part-name />
     </score-part>
   </part-list>
   <!--=========================== Part 1 ===========================-->
-  <part id="P07fab99cc70fdb3d7c5792d55a2b999a">
+  <part id="P76be7fe7ffac502b38051519627c0e88">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>

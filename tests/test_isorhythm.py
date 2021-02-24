@@ -1,7 +1,6 @@
 import pytest
 from music21 import converter
 from arvo import isorhythm
-from arvo import tools
 
 
 @pytest.fixture
@@ -22,7 +21,7 @@ def test_create_isorhythm(pitches_sequence, durations_sequence):
         tinyNotation: C4 D4 E2 F4 G4 C2 D4 E4 F2 G4 C4 D2 E4 F4 G2 
         """
     )
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
 def test_create_isorhythm_length(pitches_sequence, durations_sequence):
@@ -32,4 +31,4 @@ def test_create_isorhythm_length(pitches_sequence, durations_sequence):
         tinyNotation: C4 D4 E2 F4 G4 C2 D4 E4 F2 G4 C4 D2 E4 F4 G2 C4 D4 E2
         """
     )
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(intended_result)
+    assert list(result.flat.notes) == list(intended_result.flat.notes)

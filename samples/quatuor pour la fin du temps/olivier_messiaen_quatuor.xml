@@ -8,7 +8,7 @@
   <identification>
     <creator type="composer">Olivier Messiaen</creator>
     <encoding>
-      <encoding-date>2021-02-23</encoding-date>
+      <encoding-date>2021-02-24</encoding-date>
       <software>music21 v.6.5.0</software>
     </encoding>
   </identification>
@@ -19,7 +19,7 @@
     </scaling>
   </defaults>
   <part-list>
-    <score-part id="Pc953a21dbd4d856e10d721c9f592ac71">
+    <score-part id="P5a3b96af01de1809c6bf1da6cb182af1">
       <part-name>Vc.</part-name>
     </score-part>
     <part-group number="1" type="start">
@@ -27,16 +27,16 @@
       <group-symbol>brace</group-symbol>
       <group-barline>yes</group-barline>
     </part-group>
-    <score-part id="P7c4b3dcf5ac03cbf18ca261dadaf75ba">
+    <score-part id="P6129e7476beb5d06fa15cefcea4d2efc">
       <part-name />
     </score-part>
-    <score-part id="Pb19194d51dd10f289c12c8ae125939ca">
+    <score-part id="P813a3ec7fe26cf58d1dfe230a26b500f">
       <part-name />
     </score-part>
     <part-group number="1" type="stop" />
   </part-list>
   <!--=========================== Part 1 ===========================-->
-  <part id="Pc953a21dbd4d856e10d721c9f592ac71">
+  <part id="P5a3b96af01de1809c6bf1da6cb182af1">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>
@@ -3338,7 +3338,7 @@
     </measure>
   </part>
   <!--=========================== Part 2 ===========================-->
-  <part id="P7c4b3dcf5ac03cbf18ca261dadaf75ba">
+  <part id="P6129e7476beb5d06fa15cefcea4d2efc">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>
@@ -9893,7 +9893,7 @@
     </measure>
   </part>
   <!--=========================== Part 3 ===========================-->
-  <part id="Pb19194d51dd10f289c12c8ae125939ca">
+  <part id="P813a3ec7fe26cf58d1dfe230a26b500f">
     <!--========================= Measure 1 ==========================-->
     <measure number="1">
       <attributes>

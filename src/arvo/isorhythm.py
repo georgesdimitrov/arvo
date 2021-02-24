@@ -31,13 +31,15 @@ def create_isorhythm(
     """Creates an isorhythmic construction from pitches and durations sequences.
 
     Args:
-        pitches: The stream or Sequence containing pitch information. Sequence can consist of pitch classes (0-11),
-          midi note numbers (12+), note names (str), music21 Pitch objects or music21 Note objects.
-        durations: The stream or Sequence containing duration information. Sequence can consist of numeric values
-          (1 = quarter note), music21 Duration objects or music21 Note objects.
-        length: Optional; The length of the resulting stream, expressed in isorhythmic elements. By default, the process
-          continues until the cycle is completed. For example, provided a color of 5 pitches and a talea of 7 rhythms,
-          this function will, by default, return an isorhythm of 35 elements.
+        pitches: The stream or Sequence containing pitch information. Sequence can consist of
+          pitch classes (0-11), midi note numbers (12+), note names (str), music21 Pitch objects
+          or music21 Note objects.
+        durations: The stream or Sequence containing duration information. Sequence can consist
+          of numeric values (1 = quarter note), music21 Duration objects or music21 Note objects.
+        length: Optional; The length of the resulting stream, expressed in isorhythmic elements.
+          By default, the process continues until the cycle is completed. For example, provided a
+          color of 5 pitches and a talea of 7 rhythms, this function will, by default, return an
+          isorhythm of 35 elements.
 
     Returns:
         The stream created by the isorhythmic process.

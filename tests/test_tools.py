@@ -39,7 +39,7 @@ def durations_stream():
 )
 def test_pitches_to_stream(pitches_stream, sequence):
     result = tools.notes_to_stream(sequence)
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(pitches_stream)
+    assert list(result.flat.notes) == list(pitches_stream.flat.notes)
 
 
 @pytest.mark.parametrize(
@@ -62,4 +62,4 @@ def test_pitches_to_stream(pitches_stream, sequence):
 )
 def test_durations_to_stream(durations_stream, sequence):
     result = tools.durations_to_stream(sequence)
-    assert tools.stream_to_notes(result) == tools.stream_to_notes(durations_stream)
+    assert list(result.flat.notes) == list(durations_stream.flat.notes)
