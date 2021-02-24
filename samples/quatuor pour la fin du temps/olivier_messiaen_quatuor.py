@@ -1,19 +1,34 @@
-from music21 import stream
+"""
+
+Frederic Rzewski - Coming Together
+
+This example showcases the following arvo modules:
+
+minimalism for creating the additive and substractive processes
+transformations for scalar transposition and inversion, as well as retrograde
+scales for the PentatonicScale subclass.
+
+Since Rzewski applied mathematical processes in a very strict way to create the piece, the generated
+output is 100% identical to the original score.
+
+"""
+
 from music21 import chord
-from music21 import meter
-from music21 import layout
-from music21 import note
-from music21 import metadata
-from music21 import duration
 from music21 import clef
+from music21 import duration
 from music21 import key
-from music21 import instrument
+from music21 import layout
+from music21 import metadata
+from music21 import meter
+from music21 import note
+from music21 import stream
 from arvo import isorhythm
 from arvo import tools
 
-# ----------------------------------------------------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------------------------------
 # Define pitch and duration sequences for the piano
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 piano_left_hand_chords = [
     chord.Chord(["F3", "G3", "Bb3", "C4"]),
@@ -99,41 +114,42 @@ piano_durations = [
     2,
 ]
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Define pitch and duration sequences for the cello
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 cello_notes = ["C4", "E4", "D4", "F#4", "Bb3"]
-cello_durations = [
-    2, 1.5, 2, 2,
-    0.5, 0.5, 1.5,
-    0.5, 0.5, 0.5, 0.5, 1.5,
-    0.5, 0.5, 2
-]
+cello_durations = [2, 1.5, 2, 2, 0.5, 0.5, 1.5, 0.5, 0.5, 0.5, 0.5, 1.5, 0.5, 0.5, 2]
 
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Create isorhythms
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
-piano_right_hand = isorhythm.create_isorhythm(piano_right_hand_chords, piano_durations, length=167)
-piano_left_hand = isorhythm.create_isorhythm(piano_left_hand_chords, piano_durations, length=167)
+piano_right_hand = isorhythm.create_isorhythm(
+    piano_right_hand_chords, piano_durations, length=167
+)
+piano_left_hand = isorhythm.create_isorhythm(
+    piano_left_hand_chords, piano_durations, length=167
+)
 cello = isorhythm.create_isorhythm(cello_notes, cello_durations, length=109)
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Add time signatures, rests, clefs...
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
 piano_right_hand.insertAndShift(0, note.Rest(duration=duration.Duration(2)))
 piano_right_hand.insert(0, meter.TimeSignature("3/4"))
 piano_right_hand.insert(key.KeySignature(-2))
-piano_right_hand.notes[len(piano_right_hand.notes) - 1].duration = duration.Duration(1.25)  # Extend final note
+piano_right_hand.notes[len(piano_right_hand.notes) - 1].duration = duration.Duration(
+    1.25
+)
 piano_right_hand.makeMeasures(inPlace=True)
 
 piano_left_hand.insertAndShift(0, note.Rest(duration=duration.Duration(2)))
 piano_left_hand.insert(key.KeySignature(-2))
 piano_left_hand.insert(0, meter.TimeSignature("3/4"))
-piano_left_hand.notes[len(piano_left_hand.notes) - 1].duration = duration.Duration(1.25)  # Extend final note
+piano_left_hand.notes[len(piano_left_hand.notes) - 1].duration = duration.Duration(1.25)
 piano_left_hand.insert(0, clef.BassClef())
 for n in piano_left_hand.notes:
     if n.pitches == chord.Chord(["F4", "G#4", "Bb4"]).pitches:
@@ -152,34 +168,35 @@ for n in cello.notes:
     harmonicNote.pitch.ps = n.pitch.ps + 5
     harmonicNote.notehead = "diamond"
     harmonicNote.noteheadFill = "no"
-    c = chord.Chord(notes= [n, harmonicNote], duration=n.duration)
+    c = chord.Chord(notes=[n, harmonicNote], duration=n.duration)
     cello.insert(n.offset, c)
     cello.remove(n)
 cello.makeMeasures(inPlace=True)
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Build final score
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 
-score = stream.Score()
-piano_right_hand = tools.stream_to_part(piano_right_hand)
-piano_left_hand = tools.stream_to_part(piano_left_hand)
-cello = tools.stream_to_part(cello)
+piano_right_hand = tools.convert_stream(piano_right_hand, stream.Part)
+piano_left_hand = tools.convert_stream(piano_left_hand, stream.Part)
+cello = tools.convert_stream(cello, stream.Part)
 cello.partName = "Vc."
-score.insert(0, cello)
-score.insert(0, piano_right_hand)
-score.insert(0, piano_left_hand)
+score = tools.merge_streams(
+    cello, piano_right_hand, piano_left_hand, stream_class=stream.Score
+)
 piano_staff_group = layout.StaffGroup(
-    [piano_right_hand, piano_left_hand], name="Piano", abbreviation="Pno.", symbol="brace"
+    [piano_right_hand, piano_left_hand],
+    name="Piano",
+    abbreviation="Pno.",
+    symbol="brace",
 )
 score.insert(0, piano_staff_group)
 score.metadata = metadata.Metadata()
 score.metadata.title = "Liturgie de Cristal"
 score.metadata.composer = "Olivier Messiaen"
 
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 # Output xml file and show score in MuseScore
-# ----------------------------------------------------------------------------------------------------------------------
+# --------------------------------------------------------------------------------------------------
 score.write(fp="olivier_messiaen_quatuor.xml")
 score.show()
-
