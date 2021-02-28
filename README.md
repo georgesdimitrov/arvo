@@ -24,3 +24,6 @@ It currently contains the following samples:
 * **Olivier Messiaen** - *Quatuor pour la fin du temps* (isorhythm)
 * **Arvo Pärt** - *Fratres* (minimalism, transformations, tintinnabuli)
 * **Frederic Rzewski** - *Coming Together* (minimalism, transformations)
+
+### Tutorial
+Want to see arvo in action? Watch a 20 minutes primer to setting up arvo and using it with MuseScore and Ableton Live: https://www.youtube.com/watch?v=qxB7r4hnEL8
