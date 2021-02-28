@@ -47,6 +47,7 @@ class StepMode(enum.Enum):
     In ABSOLUTE mode, step determines the amount of elements added each iteration relative to
       the starting point.
     """
+
     RELATIVE = 1
     ABSOLUTE = 2
 
@@ -58,7 +59,7 @@ def additive_process(
     step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations_start: Optional[int] = None,
-    iterations_end: Optional[int] = None,
+    iterations_stop: Optional[int] = None,
 ) -> stream.Stream:
     """Applies an additive process to a stream.
 
@@ -82,7 +83,7 @@ def additive_process(
           each iteration, looping if it reaches the end of the sequence.
         iterations_start: Optional; Starts the process at the specified iteration. By default,
           additive processes start at iteration 1.
-        iterations_end: Optional; Stops the process at the specified iteration. By default, the
+        iterations_stop: Optional; Stops the process at the specified iteration. By default, the
           process runs until the original stream is completed or an infinite loop is detected.
     Returns:
         The new stream created by the additive process.
@@ -121,31 +122,31 @@ def additive_process(
             position2 = current_length
             if position2 > original_length:
                 position2 = original_length
-            if iterations_end is None and position2 == original_length:
+            if iterations_stop is None and position2 == original_length:
                 completed = True
         elif direction is Direction.BACKWARD:
             position1 = original_length - current_length
             position2 = original_length
             if position1 < 0:
                 position1 = 0
-            if iterations_end is None and position1 == 0:
+            if iterations_stop is None and position1 == 0:
                 completed = True
         elif direction is Direction.INWARD:
             position1 = current_length
             position2 = original_length - current_length
             if position1 >= position2:
                 position1 = position2
-            if iterations_end is None and position1 == position2:
+            if iterations_stop is None and position1 == position2:
                 completed = True
         elif direction is Direction.OUTWARD:
-            position1 = math.floor(original_length / 2.0 - current_length)
+            position1 = math.ceil(original_length / 2.0 - current_length)
             position2 = math.floor(original_length / 2.0 + current_length)
             if position1 < 0:
                 position1 = 0
             if position2 > original_length:
                 position2 = original_length
             if (
-                iterations_end is None
+                iterations_stop is None
                 and position1 == 0
                 and position2 == original_length
             ):
@@ -169,7 +170,7 @@ def additive_process(
 
         # Increment iteration index, stopping if iterations parameter has been set and reached.
         iteration_index += 1
-        if iterations_end is not None and iteration_index == iterations_end:
+        if iterations_stop is not None and iteration_index == iterations_stop:
             completed = True
 
         # Increment step and repetition indexes, looping if the end of the sequence is reached.
@@ -177,7 +178,7 @@ def additive_process(
         if step_index > len(step_sequence) - 1:
             step_index = 0
             # Infinite loop check
-            if iterations_end is None and step_mode == StepMode.ABSOLUTE:
+            if iterations_stop is None and step_mode == StepMode.ABSOLUTE:
                 completed = True
         repetitions_index += 1
         if repetitions_index > len(repetitions_sequence) - 1:
@@ -199,7 +200,7 @@ def subtractive_process(
     step_mode: StepMode = StepMode.RELATIVE,
     repetitions: Union[int, Sequence[int]] = 1,
     iterations_start: Optional[int] = None,
-    iterations_end: Optional[int] = None,
+    iterations_stop: Optional[int] = None,
 ) -> stream.Stream:
     """Applies an subtractive process to a stream.
 
@@ -223,7 +224,7 @@ def subtractive_process(
           iteration, looping if it reaches the end of the sequence.
         iterations_start: Optional; Starts the process at the specified iteration. By default
           subtractive processes start at iteration 0.
-        iterations_end: Optional; Determines the number of iterations to do before the process
+        iterations_stop: Optional; Determines the number of iterations to do before the process
           stops. By default, the process runs until the original stream disappears. Note that the
           subtractive process starts with the complete stream, so the first iteration results in
           the second segment.
@@ -266,14 +267,14 @@ def subtractive_process(
             position2 = original_length
             if position1 >= original_length:
                 position1 = original_length
-            if iterations_end is None and position1 == original_length:
+            if iterations_stop is None and position1 == original_length:
                 completed = True
         elif direction is Direction.BACKWARD:
             position1 = 0
             position2 = original_length - current_length
             if position2 <= 0:
                 position2 = 0
-            if iterations_end is None and position2 == 0:
+            if iterations_stop is None and position2 == 0:
                 completed = True
         elif direction is Direction.INWARD:
             position1 = current_length
@@ -282,17 +283,19 @@ def subtractive_process(
                 position2 = 0
             if position1 >= position2:
                 position1 = position2
-            if iterations_end is None and position1 == position2:
+            if iterations_stop is None and position1 == position2:
                 completed = True
         elif direction is Direction.OUTWARD:
-            position1 = math.floor(original_length / 2.0 - current_length)
+            position1 = math.ceil(original_length / 2.0 - current_length)
             position2 = math.floor(original_length / 2.0 + current_length)
+            if position2 < position1:
+                position2 = position1
             if position1 < 0:
                 position1 = 0
             if position2 >= original_length:
                 position2 = original_length
             if (
-                iterations_end is None
+                iterations_stop is None
                 and position1 == 0
                 and position2 == original_length
             ):
@@ -305,6 +308,7 @@ def subtractive_process(
                 if direction is Direction.OUTWARD:
                     for i in range(0, position1):
                         current_stream.append(copy.deepcopy(original_notes[i]))
+
                     for i in range(position2, original_length):
                         current_stream.append(copy.deepcopy(original_notes[i]))
                 else:
@@ -316,7 +320,7 @@ def subtractive_process(
 
         # Increment iteration index, stopping if iterations parameter has been set and reached.
         iteration_index += 1
-        if iterations_end is not None and iteration_index == iterations_end:
+        if iterations_stop is not None and iteration_index == iterations_stop:
             completed = True
 
         # Increment step and repetition indexes, looping if the end of the sequence is reached.
@@ -324,7 +328,7 @@ def subtractive_process(
         if step_index > len(step_sequence) - 1:
             step_index = 0
             # Infinite loop check
-            if iterations_end is None and step_mode == StepMode.ABSOLUTE:
+            if iterations_stop is None and step_mode == StepMode.ABSOLUTE:
                 completed = True
         repetitions_index += 1
         if repetitions_index > len(repetitions_sequence) - 1:
@@ -409,6 +413,6 @@ def scanning_process(
         if isinstance(step_value, int):
             current_position = progression_index * step_value
 
-        #current_position = sequence(progression_index)
+        # current_position = sequence(progression_index)
 
     return post_stream
