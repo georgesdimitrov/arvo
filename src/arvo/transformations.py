@@ -150,11 +150,11 @@ def _transpose_pitch_in_scale_space(
     if steps == 0:
         return
     if steps > 0:
-        direction = "ascending"
+        direction = 1
     else:
-        direction = "descending"
+        direction = -1
         steps *= -1
-    new_pitch = reference_scale.next(original_pitch, direction, steps)
+    new_pitch = reference_scale.nextPitch(original_pitch, direction, steps)
     original_pitch.step = new_pitch.step
     original_pitch.octave = new_pitch.octave
     original_pitch.accidental = new_pitch.accidental
