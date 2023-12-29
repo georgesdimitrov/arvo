@@ -182,7 +182,7 @@ def _get_scale_distance(pitch_a, pitch_b, reference_scale):
         if scale_distance > 1000:
             return 0
 
-    if direction == "descending":
+    if direction == -1:
         scale_distance *= -1
 
     return scale_distance
