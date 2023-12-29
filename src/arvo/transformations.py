@@ -169,14 +169,14 @@ def _get_scale_distance(pitch_a, pitch_b, reference_scale):
     if pitch_a.ps == pitch_b.ps:
         return 0
 
-    direction = "ascending"
+    direction = 1
     if pitch_b.ps < pitch_a.ps:
-        direction = "descending"
+        direction = -1
 
     scale_distance = 0
     while True:
         scale_distance += 1
-        next_pitch = reference_scale.next(pitch_a, direction, scale_distance)
+        next_pitch = reference_scale.nextPitch(pitch_a, direction, scale_distance)
         if next_pitch.ps == pitch_b.ps:
             break
         if scale_distance > 1000:
