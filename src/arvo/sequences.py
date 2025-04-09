@@ -1,12 +1,26 @@
+"""
+Module for generating common integer sequences.
+
+This module provides both precomputed constant sequences and functions that
+generate sequences on-the-fly for common integer sequences, including:
+  - A linear sequence (integers from 1 upward)
+  - Prime numbers (via both a constant list and a generator)
+  - Prime powers (precomputed)
+  - Fibonacci numbers
+  - Tribonacci numbers
+  - Divisor counts for natural numbers (precomputed)
+  - The Kolakoski sequence
+
+The generative functions allow the user to specify a desired length, making the
+module more flexible.
+"""
+
 import itertools
 
-# Linear sequence
-_linearList = []
-for i in range(1, 200):
-    _linearList.append(i)
-LINEAR = _linearList
+# Precomputed constant sequences
 
-# Prime numbers
+LINEAR = list(range(1, 200))
+
 PRIMES = [
     2,
     3,
@@ -132,7 +146,6 @@ PRIME_POWERS = [
     211,
 ]
 
-# Fibonacci & Tribonacci numbers
 FIBONACCI = [
     1,
     1,
@@ -215,7 +228,6 @@ TRIBONACCI = [
     1132436852,
 ]
 
-# Divisors
 DIVISORS = [
     1,
     2,
@@ -323,13 +335,126 @@ DIVISORS = [
     8,
 ]
 
+# Generative functions for sequences
 
-# Kolakoski sequences (credit to rosettacode.org)
+
+def linear(n: int) -> list[int]:
+    """
+    Generate a linear sequence of integers from 1 to n.
+
+    Parameters:
+        n (int): The length (upper bound) of the sequence.
+
+    Returns:
+        List[int]: A list of integers from 1 to n.
+    """
+    return list(range(1, n + 1))
+
+
+def fibonacci(n: int) -> list[int]:
+    """
+    Generate the first n Fibonacci numbers.
+
+    The Fibonacci sequence is defined by the recurrence relation:
+        F(0) = 1, F(1) = 1, F(n) = F(n-1) + F(n-2) for n > 1.
+
+    Parameters:
+        n (int): The number of Fibonacci numbers to generate.
+
+    Returns:
+        List[int]: A list containing the first n Fibonacci numbers.
+    """
+    if n <= 0:
+        return []
+    if n == 1:
+        return [1]
+    fib_seq = [1, 1]
+    while len(fib_seq) < n:
+        fib_seq.append(fib_seq[-1] + fib_seq[-2])
+    return fib_seq
+
+
+def tribonacci(n: int) -> list[int]:
+    """
+    Generate the first n Tribonacci numbers.
+
+    The Tribonacci sequence is defined by the recurrence relation:
+        T(0) = 1, T(1) = 1, T(2) = 2, T(n) = T(n-1) + T(n-2) + T(n-3) for n > 2.
+
+    Parameters:
+        n (int): The number of Tribonacci numbers to generate.
+
+    Returns:
+        List[int]: A list containing the first n Tribonacci numbers.
+    """
+    if n <= 0:
+        return []
+    if n == 1:
+        return [1]
+    if n == 2:
+        return [1, 1]
+    trib_seq = [1, 1, 2]
+    while len(trib_seq) < n:
+        trib_seq.append(trib_seq[-1] + trib_seq[-2] + trib_seq[-3])
+    return trib_seq
+
+
+def primes(n: int) -> list[int]:
+    """
+    Generate the first n prime numbers using a simple trial division algorithm.
+
+    Parameters:
+        n (int): The number of prime numbers to generate.
+
+    Returns:
+        List[int]: A list containing the first n prime numbers.
+    """
+    if n <= 0:
+        return []
+    prime_numbers = []
+    candidate = 2
+    while len(prime_numbers) < n:
+        is_prime = True
+        for p in prime_numbers:
+            if candidate % p == 0:
+                is_prime = False
+                break
+            # No need to check beyond the square root of candidate
+            if p * p > candidate:
+                break
+        if is_prime:
+            prime_numbers.append(candidate)
+        candidate += 1
+    return prime_numbers
+
+
+# Kolakoski sequence (credit to rosettacode.org)
+
+
 def _cycler(start_items):
+    """
+    Create a cycling function that yields elements from start_items in cyclic order.
+
+    Parameters:
+        start_items (Iterable): A sequence of items to cycle.
+
+    Returns:
+        Function: A function that returns the next item in the cycle each time it is
+        called.
+    """
     return itertools.cycle(start_items).__next__
 
 
 def _kolakoski_gen(start_items):
+    """
+    Internal generator for the Kolakoski sequence.
+
+    Parameters:
+        start_items (Tuple[int, ...]): The starting items of the Kolakoski sequence.
+
+    Yields:
+        int: The next number in the Kolakoski sequence.
+    """
     s, k = [], 0
     c = _cycler(start_items)
     while True:
@@ -342,5 +467,19 @@ def _kolakoski_gen(start_items):
         k += 1
 
 
-def kolakoski(start_items=(1, 2), length=100):
+def kolakoski(start_items=(1, 2), length=100) -> list[int]:
+    """
+    Generate a Kolakoski sequence of a specified length.
+
+    The Kolakoski sequence is a self-generating sequence defined by a seed
+    (default is (1, 2)) that then describes the sequence of its own run lengths.
+
+    Parameters:
+        start_items (Tuple[int, ...], optional): The starting items of the sequence.
+        Defaults to (1, 2).
+        length (int, optional): The desired length of the sequence. Defaults to 100.
+
+    Returns:
+        List[int]: A list containing the Kolakoski sequence of the specified length.
+    """
     return list(itertools.islice(_kolakoski_gen(start_items), length))

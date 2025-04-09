@@ -1,85 +1,91 @@
-"""
-Functions for generating isorhythmic constructions from pitch and rhythm sequences.
+"""Module for generating isorhythmic constructions from pitch and rhythm sequences.
+
+An isorhythm combines a repeating sequence of pitches (color) with a repeating
+sequence of durations (talea). This module builds a music21 Stream by cycling
+through both sequences.
 """
 
-import copy
-import numbers
-from typing import Optional, Union, Sequence
+from typing import Optional
+from dataclasses import dataclass
 
 from music21 import stream
-from music21 import duration
-from music21 import pitch
-from music21 import note
-from music21 import chord
 
+from arvo import core
 from arvo import tools
-
 
 __all__ = ["create_isorhythm"]
 
 
-def create_isorhythm(
-    pitches: Union[
-        stream.Stream, Sequence[Union[numbers.Number, str, pitch.Pitch, note.Note, chord.Chord]]
-    ],
-    durations: Union[
-        stream.Stream, Sequence[Union[numbers.Number, duration.Duration, note.Note, chord.Chord]]
-    ],
-    length: Optional[int] = None,
-) -> stream.Stream:
+@dataclass
+class Options:
+    """Configuration options for the isorhythmic process.
 
-    """Creates an isorhythmic construction from pitches and durations sequences.
-
-    Args:
-        pitches: The stream or Sequence containing pitch information. Sequence can consist of
-          pitch classes (0-11), midi note numbers (12+), note names (str), music21 Pitch objects
-          or music21 Note objects.
-        durations: The stream or Sequence containing duration information. Sequence can consist
-          of numeric values (1 = quarter note), music21 Duration objects or music21 Note objects.
-        length: Optional; The length of the resulting stream, expressed in isorhythmic elements.
-          By default, the process continues until the cycle is completed. For example, provided a
-          color of 5 pitches and a talea of 7 rhythms, this function will, by default, return an
-          isorhythm of 35 elements.
-
-    Returns:
-        The stream created by the isorhythmic process.
+    Attributes:
+        length: Optional number of elements in the resulting stream. If not specified,
+            the process continues until the combined pitch and rhythm cycles
+            complete a full loop (i.e., least common multiple of their lengths).
+            For example, a color of 5 pitches and a talea of 7 durations would
+            produce 35 elements by default.
     """
 
-    # Create pitches list
-    if not isinstance(pitches, stream.Stream):
-        pitches = tools.notes_to_stream(pitches)
-    color_list = []
-    for element in pitches.flat.notes:
-        color_list.append(element)
+    length: Optional[int] = None
 
-    # Create durations list
-    if not isinstance(durations, stream.Stream):
-        durations = tools.durations_to_stream(durations)
-    talea_list = []
-    for element in durations.flat.notes:
-        talea_list.append(element.duration)
+
+def create_isorhythm(
+    pitches: core.PitchesSequence | stream.Stream,
+    durations: core.DurationsSequence | stream.Stream,
+    options: Optional[Options] = None,
+) -> stream.Stream:
+    """Creates an isorhythmic construction from pitch and duration sequences.
+
+    The function cycles through the pitch and rhythm inputs independently, combining
+    them element by element. If no length is specified, the process stops after
+    both sequences align (i.e., complete one full shared cycle).
+
+    Args:
+        pitches: A pitch sequence or music21 Stream. Acceptable inputs include:
+            - Pitch classes (0–11)
+            - MIDI numbers (12+)
+            - Note names (e.g., "C4")
+            - music21 Pitch or GeneralNote objects
+            If a Stream is given, it is flattened and its note, chord and rest
+            elements are extracted.
+        durations: A duration sequence or music21 Stream. Acceptable inputs include:
+            - Numeric values (1 = quarter note)
+            - music21 Duration or GeneralNote objects
+            Like pitches, a Stream will be flattened and the duration of its note,
+            chord and rest elements will be extracted.
+        options: Optional configuration for the isorhythmic process.
+
+    Returns:
+        A music21 Stream containing the resulting isorhythmic structure.
+    """
+    options = options or Options()
+    pitches = core.ArvoPitchesSequence(pitches)
+    durations = core.ArvoDurationsSequence(durations)
 
     # Initialize function variables
-    color_index = 0
-    talea_index = 0
-    current_length = 0
+    pitch_index = 0
+    rhythm_index = 0
+    element_count = 0
     post_stream = stream.Stream()
 
     # Loop
     while True:
-        current_element = copy.deepcopy(color_list[color_index])
-        current_element.duration = talea_list[talea_index]
+        current_element = tools.create_note(
+            pitches[pitch_index], durations[rhythm_index]
+        )
         post_stream.append(current_element)
-        color_index += 1
-        if color_index == len(color_list):
-            color_index = 0
-        talea_index += 1
-        if talea_index == len(talea_list):
-            talea_index = 0
-        current_length += 1
-        if length is None and color_index == 0 and talea_index == 0:
+        pitch_index += 1
+        if pitch_index == len(pitches):
+            pitch_index = 0
+        rhythm_index += 1
+        if rhythm_index == len(durations):
+            rhythm_index = 0
+        element_count += 1
+        if options.length is None and pitch_index == rhythm_index == 0:
             break
-        if length is not None and current_length == length:
+        if options.length is not None and element_count == options.length:
             break
 
     return post_stream

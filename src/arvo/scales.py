@@ -1,5 +1,8 @@
-"""
-Module that extends music 21 scales system.
+"""Extends the music21 scale system with support for standard pentatonic scales.
+
+Includes abstract and concrete representations of the common 5-note
+pentatonic scale (Set 5-35), supporting different modes and integration
+with music21.
 """
 
 __all__ = ["AbstractPentatonicScale", "PentatonicScale"]
@@ -9,7 +12,11 @@ from music21.scale import intervalNetwork
 
 
 class AbstractPentatonicScale(music21.scale.AbstractScale):
-    def __init__(self, mode=None):
+    """An abstract representation of the standard pentatonic scale (Set 5-35),
+    supporting modal rotation.
+    """
+
+    def __init__(self, mode: int | str | None = None):
         super().__init__()
         self.type = "Abstract Pentatonic"
         # all pentatonic scales are octave duplicating
@@ -17,27 +24,23 @@ class AbstractPentatonicScale(music21.scale.AbstractScale):
         # here, accept None
         self.buildNetwork(mode=mode)
 
-    def buildNetwork(self, mode=None):
+    def buildNetwork(self, mode: int | str | None = None) -> None:
         src_list = ("M2", "M2", "m3", "M2", "m3")
         if mode in (None, 1, "major", "Major"):
             interval_list = src_list
-            self.tonicDegree = 1
         elif mode == 2:
             interval_list = src_list[1:] + src_list[:1]
-            self.tonicDegree = 1
         elif mode == 3:
             interval_list = src_list[2:] + src_list[:2]
-            self.tonicDegree = 1
         elif mode == 4:
             interval_list = src_list[3:] + src_list[:3]
-            self.tonicDegree = 1
         elif mode in (5, "minor", "Minor"):
             interval_list = src_list[4:] + src_list[:4]
-            self.tonicDegree = 1
         else:
             raise music21.scale.ScaleException(
-                f"cannot create a scale of the following mode: {mode}"
+                f"Cannot create a scale with the specified mode: {mode}"
             )
+        self.tonicDegree = 1
         self._net = intervalNetwork.IntervalNetwork(
             interval_list,
             octaveDuplicating=self.octaveDuplicating,
@@ -47,9 +50,15 @@ class AbstractPentatonicScale(music21.scale.AbstractScale):
 
 
 class PentatonicScale(music21.scale.ConcreteScale):
+    """A concrete pentatonic scale in one of five modes."""
+
     usePitchDegreeCache = True
 
-    def __init__(self, tonic=None, mode=None):
+    def __init__(
+        self,
+        tonic: music21.pitch.Pitch | str | None = None,
+        mode: int | str | None = None,
+    ):
         super().__init__(tonic=tonic)
         self._abstract = AbstractPentatonicScale(mode=mode)
         self.type = "Pentatonic"

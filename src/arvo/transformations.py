@@ -1,6 +1,8 @@
 """
-Module for transformations such as transposition and inversion.
+Module providing transformations, such as transposition, inversion, retrograde,
+and octave shifts.
 """
+
 import copy
 from typing import Union
 
@@ -8,7 +10,7 @@ from music21 import pitch
 from music21 import scale
 from music21 import stream
 
-__all__ = ["scalar_transposition", "scalar_inversion", "octave_shift"]
+__all__ = ["scalar_transposition", "scalar_inversion", "retrograde", "octave_shift"]
 
 
 def scalar_transposition(
@@ -17,18 +19,18 @@ def scalar_transposition(
     reference_scale: scale.ConcreteScale = scale.ChromaticScale("C"),
     in_place: bool = False,
 ) -> stream.Stream:
-    """Performs scale-space transpotition on a stream.
+    """
+    Performs scale-space transposition on a stream.
 
-    Transposes all notes in a stream by a specified amount of scale steps in a specific scale space.
+    Transposes all notes in a stream by a specified number of scale steps within a
+    given reference scale.
 
     Args:
         original_stream: The stream to process.
-        steps: The amount of steps to transpose. Positive values transpose up, negative values
-          transpose down.
-        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale
-          is used.
-        in_place: Optional; If true, the operation is done in place on the original stream. By
-          default, a new Stream object is returned.
+        steps: The number of scale steps to transpose. Positive values transpose
+        upward; negative values downward.
+        reference_scale: The scale used as reference. Defaults to the chromatic scale.
+        in_place: If True, modifies the original stream; otherwise returns a new stream.
 
     Returns:
         The transposed stream.
@@ -49,15 +51,18 @@ def scalar_inversion(
     reference_scale: scale.ConcreteScale = scale.ChromaticScale("C"),
     in_place: bool = False,
 ) -> stream.Stream:
-    """Performs a scale-space inversion on a stream.
+    """
+    Performs a scale-space inversion around a given pitch axis.
+
+    Each pitch in the stream is inverted symmetrically around the inversion axis
+    within the provided reference scale.
 
     Args:
-        original_stream: The stream to process.
-        inversion_axis: The pitch around which to execute the inversion.
-        reference_scale: Optional; The scale to use as reference. By default, the chromatic scale is
-          used.
-        in_place: Optional; If true, the operation is done in place on the original stream. By
-          default, a new Stream object is returned.
+        original_stream: The stream to invert.
+        inversion_axis: The central pitch (as string or Pitch object) around which to
+        invert.
+        reference_scale: The scale used as reference. Defaults to the chromatic scale.
+        in_place: If True, modifies the original stream; otherwise returns a new stream.
 
     Returns:
         The inverted stream.
@@ -85,59 +90,54 @@ def retrograde(
     original_stream: stream.Stream,
     in_place: bool = False,
 ) -> stream.Stream:
-    """Performs a retrograde operation on a Stream.
+    """
+    Reverses the order of notes within the stream (retrograde transformation).
 
     Args:
-        original_stream: The Stream to process.
-        in_place: Optional; If true, the operation is done in place on the original stream. By
-          default, a new Stream object is returned.
+        original_stream: The stream to reverse.
+        in_place: If True, modifies the original stream; otherwise returns a new stream.
 
     Returns:
-        The reversed Stream.
+        The reversed stream.
     """
     # Check if stream is to be processed in place
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
-    # Extract list of notes and clear stream of bars and notes
-    notes = list(post_stream.flat.notes)
-    post_stream.removeByClass("Barline")
-    post_stream.removeByClass("Measure")
-    post_stream.remove(notes, recurse=True)
+    # Flatten to simplify handling offsets
+    flattened_notes = list(post_stream.flatten().notesAndRests)
 
-    # Build new stream of notes in reverse order
-    reverse_stream = stream.Stream()
-    for note_ in reversed(notes):
-        reverse_stream.append(note_)
+    post_stream.remove(flattened_notes, recurse=True)
 
-    # Put back notes in the stream
-    for note_ in reverse_stream.notes:
-        post_stream.insert(note_.offset, note_)
-
-    post_stream.sort()
-    #post_stream.makeMeasures(inPlace=True)
+    # Reinsert notes in reversed order, recalculating offsets correctly
+    current_offset = 0.0
+    for element in reversed(flattened_notes):
+        post_stream.insert(current_offset, element)
+        current_offset += element.duration.quarterLength
 
     return post_stream
 
 
-def octave_shift(original_stream: stream.Stream, octave_interval, in_place=False):
-    """Transpooses a Stream up or down by a number of octaves
+def octave_shift(
+    original_stream: stream.Stream, octave_interval: int, in_place: bool = False
+) -> stream.Stream:
+    """
+    Shifts all notes in the stream up or down by the specified number of octaves.
 
     Args:
-        original_stream: Stream to process.
-        octave_interval: The octave shift. Postive numbers transpose up, negative numbers transpose
-          down.
-        in_place: Optional; If true, the operation is done in place on the original stream. By
-          default, a new Stream object is returned.
+        original_stream: Stream to transpose.
+        octave_interval: Number of octaves to shift. Positive for upward, negative
+        for downward shifts.
+        in_place: If True, modifies the original stream; otherwise returns a new stream.
 
     Returns:
-        The transposed Stream.
+        The octave-shifted stream.
     """
     # Check if stream is to be processed in place
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Transpose all individual pitches
     for pitch_ in post_stream.pitches:
-        pitch_.ps += 12 * octave_interval
+        pitch_.octave += octave_interval
 
     return post_stream
 
@@ -146,21 +146,25 @@ def _transpose_pitch_in_scale_space(
     original_pitch: pitch.Pitch,
     steps: int,
     reference_scale: scale.ConcreteScale,
-) -> pitch.Pitch:
+) -> None:
     if steps == 0:
         return
     if steps > 0:
-        direction = "ascending"
+        direction = scale.intervalNetwork.Direction.ASCENDING
     else:
-        direction = "descending"
+        direction = scale.intervalNetwork.Direction.DESCENDING
         steps *= -1
-    new_pitch = reference_scale.next(original_pitch, direction, steps)
+    new_pitch = reference_scale.nextPitch(original_pitch, direction, steps)
     original_pitch.step = new_pitch.step
     original_pitch.octave = new_pitch.octave
     original_pitch.accidental = new_pitch.accidental
 
 
-def _get_scale_distance(pitch_a, pitch_b, reference_scale):
+def _get_scale_distance(
+    pitch_a: Union[str, pitch.Pitch],
+    pitch_b: Union[str, pitch.Pitch],
+    reference_scale: scale.ConcreteScale,
+) -> int:
     if isinstance(pitch_a, str):
         pitch_a = pitch.Pitch(pitch_a)
     if isinstance(pitch_b, str):
@@ -169,20 +173,32 @@ def _get_scale_distance(pitch_a, pitch_b, reference_scale):
     if pitch_a.ps == pitch_b.ps:
         return 0
 
-    direction = "ascending"
-    if pitch_b.ps < pitch_a.ps:
-        direction = "descending"
+    ascending_distance = 0
+    test_pitch = pitch_a
+    # Try ascending
+    while ascending_distance <= 1000:
+        test_pitch = reference_scale.nextPitch(
+            test_pitch, scale.intervalNetwork.Direction.ASCENDING, 1
+        )
+        ascending_distance += 1
+        if test_pitch.ps == pitch_b.ps:
+            return ascending_distance
 
-    scale_distance = 0
-    while True:
-        scale_distance += 1
-        next_pitch = reference_scale.next(pitch_a, direction, scale_distance)
-        if next_pitch.ps == pitch_b.ps:
-            break
-        if scale_distance > 1000:
-            return 0
+    descending_distance = 0
+    test_pitch = pitch_a
+    # Try descending
+    while descending_distance <= 1000:
+        test_pitch = reference_scale.nextPitch(
+            test_pitch, scale.intervalNetwork.Direction.DESCENDING, 1
+        )
+        descending_distance += 1
+        if test_pitch.ps == pitch_b.ps:
+            return -descending_distance
 
-    if direction == "descending":
-        scale_distance *= -1
+    # If not found, raise an error or handle gracefully
+    raise ValueError(
+        f"Scale distance between {pitch_a} and {pitch_b} exceeds 1000 steps."
+    )
 
-    return scale_distance
+
+# octave shift preserves enharmonics

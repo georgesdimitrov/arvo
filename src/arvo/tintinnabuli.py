@@ -1,23 +1,33 @@
 """
+Functions for generating Arvo Pärt-inspired tintinnabuli voices.
 
-Functions for generating Arvo Pärt-inspired tintinnabuli.
-
+Tintinnabuli is a compositional technique characterized by pairing melodic lines
+(M-voices) with notes drawn exclusively from a tonic chord (T-chord), creating
+bell-like textures. This module implements processes to create tintinnabuli voices
+according to specified directions and modes.
 """
+
 import enum
-from typing import Union, Sequence
+from typing import Optional, Sequence
+from dataclasses import dataclass
 
 from music21 import stream
-from music21 import chord
 from music21 import pitch
 from music21 import note
 
 
 __all__ = ["Direction", "TMode", "create_t_voice"]
 
+from arvo import core
+from arvo import tools
+
+
 class Direction(enum.Enum):
     """
-    Determines the direction of the tintinnabuli line.
+    Specifies the direction in which the tintinnabuli voice searches for chord tones
+    relative to the M-voice pitches.
     """
+
     UP = 1
     DOWN = 2
     UP_ALTERNATE = 3
@@ -26,82 +36,143 @@ class Direction(enum.Enum):
 
 class TMode(enum.Enum):
     """
-    Determines the way the "next" note is calculated within the t-voice pitch
-      classes for notes with the same note name.
+    Specifies how the next t-voice note is determined when encountering notes
+    enharmonic to the T-chord.
+
+    For instance, given an M-voice note "Eb" and a T-chord of C major:
+    - DIATONIC mode treats "Eb" and "E" as equivalent, returning the next diatonic
+    T-note above (G).
+    - CHROMATIC mode distinguishes "Eb" from "E," returning the chromatically
+    nearest T-note (E).
     """
+
     DIATONIC = 1
     CHROMATIC = 2
 
 
+@dataclass
+class Options:
+    """
+    Configuration options for generating a tintinnabuli voice.
+
+    Attributes:
+        position: The chord interval at which t-note will be generated relative to
+        each melodic note (1 indicates the closest chord tone, 2 the second closest,
+        etc.). Default is 1.
+        direction: Direction in which to search for chord tones. Default is
+        Direction.UP.
+        mode: Method used for calculating the next note when encountering
+        enharmonic notes.
+            See TMode documentation for details. Default is TMode.DIATONIC.
+    """
+
+    position: int = 1
+    direction: Direction = Direction.UP
+    mode: TMode = TMode.DIATONIC
+
+
+@dataclass
+class _TChord:
+    """Class containing data for t-chord pitches."""
+
+    def __init__(self, t_chord):
+        self.pitch_classes = []
+        self.steps = []
+        self.pitch_names = []
+        for pitch_ in t_chord:
+            if isinstance(pitch_, str):
+                pitch_ = pitch.Pitch(pitch_)
+            elif isinstance(pitch_, int):
+                pitch_ = pitch.Pitch(pitch_)
+            elif isinstance(pitch_, note.Note):
+                pitch_ = pitch_.pitch
+            self.pitch_classes.append(pitch_.pitchClass)
+            self.steps.append(pitch_.step)
+            self.pitch_names.append(pitch_.name)
+
+
+class _Tintinnabuli:
+    """
+    Internal class implementing the tintinnabuli voice-generation process given an
+    M-voice and a T-chord.
+    """
+
+    def __init__(self, m_voice, t_chord, options):
+        self._options = options or Options()
+        self._m_voice = core.ArvoPitchesSequence(m_voice)
+        self._t_chord = _TChord(t_chord)
+        self._t_notes = []
+        match self._options.direction:
+            case Direction.UP | Direction.UP_ALTERNATE:
+                self._pitch_delta = 1
+            case Direction.DOWN | Direction.DOWN_ALTERNATE:
+                self._pitch_delta = -1
+
+    def apply_process(self):
+        temp_pitch = pitch.Pitch()
+
+        for m_element in self._m_voice:
+            m_note = tools.to_note(m_element, True)
+            temp_pitch.ps = m_note.pitch.ps
+            position_index = 0
+            while position_index < self._options.position:
+                temp_pitch.ps = temp_pitch.ps + self._pitch_delta
+                if temp_pitch.pitchClass in self._t_chord.pitch_classes:
+                    if temp_pitch.name not in self._t_chord.pitch_names:
+                        temp_pitch = temp_pitch.getEnharmonic()
+                    if self._options.mode is TMode.DIATONIC:
+                        if (
+                            temp_pitch.octave != m_note.pitch.octave
+                            or temp_pitch.step != m_note.pitch.step
+                        ):
+                            position_index += 1
+                    else:
+                        position_index += 1
+            t_note = note.Note()
+            t_note.name = temp_pitch.name
+            t_note.octave = temp_pitch.octave
+            t_note.duration = m_note.duration
+            t_note.offset = m_note.offset
+            self._t_notes.append(t_note)
+            if (
+                self._options.direction is Direction.UP_ALTERNATE
+                or self._options.direction is Direction.DOWN_ALTERNATE
+            ):
+                self._pitch_delta *= -1
+
+    @property
+    def result(self):
+        if self._m_voice.is_stream:
+            t_stream = stream.Stream()
+            for t_note in self._t_notes:
+                t_stream.insert(t_note.offset, t_note)
+            return t_stream
+        return [t_note.pitch for t_note in self._t_notes]
+
+
 def create_t_voice(
-    m_voice: stream.Stream,
-    t_chord: Union[Sequence[int], Sequence[str], chord.Chord],
-    position: int = 1,
-    direction: Direction = Direction.UP,
-    t_mode: TMode = TMode.DIATONIC,
-)-> stream.Stream:
-    """Generates a t-voice melodic stream from a m-voice melodic stream.
+    m_voice: core.PitchesSequence | stream.Stream,
+    t_chord: core.PitchesSequence | stream.Stream,
+    options: Optional[Options] = None,
+) -> Sequence[pitch.Pitch] | stream.Stream:
+    """
+    Generates a tintinnabuli (T-voice) melody from a given melodic (M-voice) melody
+    and T-chord.
+
+    Accepts either a sequence of pitches or a music21 Stream as input:
+    - If provided a pitch sequence, returns a corresponding sequence of T pitches.
+    - If provided a music21 Stream, returns a new Stream of T notes matching the
+    durations and offsets of the original M-voice notes.
 
     Args:
-        m_voice: The stream containing the melody to use as the basis for the tintinnabuli.
-        t_chord: A list of pitch-classes to use as the basis of the t-voice. Accepts letter names or
-          numeric pitch classes. Can also be a music21 Chord object.
-        position: Optional; The position of the t-voice. Default is 1.
-        direction: Optional; The direction of the tintinnabuli process. Default is Direction.UP.
-        t_mode: Optional; Determines the way the "next" note is calculated within the t-voice pitch
-          classes for notes with the same note name. For example if the m-voice contains an Eb and
-          the t-chord is C major: TMode.DIATONIC will consider that Eb and E are the same note, and
-          will return G as the first "diatonic" t-note above. TMode.CHROMATIC ignores this and
-          simply returns E as the first "chromatic" t-note above. Default is TMode.DIATONIC.
+        m_voice: Sequence or Stream of melodic pitches or notes serving as the M-voice.
+        t_chord: Sequence of pitch-classes or a music21 Chord object defining the
+        T-chord.
+        options: Optional tintinnabuli settings controlling voice generation.
 
     Returns:
-        A stream that contains the new t-voice.
+        A Sequence of pitches or a Stream of notes representing the generated T-voice.
     """
-    # Create t-voice stream
-    t_voice = stream.Stream()
-
-    # Create t-voice pitch-class lists
-    if isinstance(t_chord, chord.Chord):
-        t_pitches = t_chord.pitches
-    else:
-        t_pitches = t_chord
-    t_pitch_classes = []
-    t_steps = []
-    for pitch_ in t_pitches:
-        if isinstance(pitch_, str):
-            pitch_ = pitch.Pitch(pitch_)
-        elif isinstance(pitch_, int):
-            pitch_ = pitch.Pitch(pitch_)
-        t_pitch_classes.append(pitch_.pitchClass)
-        t_steps.append(pitch_.step)
-
-    # Determine starting pitch direction
-    if direction is Direction.DOWN or direction is Direction.DOWN_ALTERNATE:
-        pitch_delta = -1
-    elif direction is Direction.UP or direction is Direction.UP_ALTERNATE:
-        pitch_delta = 1
-
-    temp_pitch = pitch.Pitch()
-
-    for m_note in m_voice.flat.notes:
-        temp_pitch.ps = m_note.pitch.ps
-        position_index = 0
-        while position_index < position:
-            temp_pitch.ps = temp_pitch.ps + pitch_delta
-            if temp_pitch.pitchClass in t_pitch_classes:
-                if t_mode is TMode.DIATONIC:
-                    if (
-                        temp_pitch.octave != m_note.pitch.octave
-                        or temp_pitch.step != m_note.pitch.step
-                    ):
-                        position_index += 1
-                else:
-                    position_index += 1
-        t_note = note.Note()
-        t_note.pitch.ps = temp_pitch.ps
-        t_note.duration = m_note.duration
-        t_voice.insert(m_note.offset, t_note)
-        if direction is Direction.UP_ALTERNATE or direction is Direction.DOWN_ALTERNATE:
-            pitch_delta *= -1
-
-    return t_voice
+    tintinnabuli = _Tintinnabuli(m_voice, t_chord, options)
+    tintinnabuli.apply_process()
+    return tintinnabuli.result
