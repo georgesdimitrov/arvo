@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arvo"
+version = "0.4.0"
+description = "Python library for procedural music composition"
+authors = [
+    { name = "Georges Dimitrov", email = "georges.dimitrov@gmail.com" }
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "music21"
+]
+
+[project.urls]
+Homepage = "https://github.com/georgesdimitrov/arvo"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
