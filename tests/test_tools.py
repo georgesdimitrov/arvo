@@ -60,6 +60,7 @@ def test_pitches_to_stream(pitches_stream, sequence):
         ],
     ],
 )
+
 def test_durations_to_stream(durations_stream, sequence):
     result = tools.durations_to_stream(sequence)
     assert list(result.flat.notes) == list(durations_stream.flat.notes)

@@ -1,7 +1,11 @@
 import pytest
 from music21 import converter
 from music21 import chord
+from music21 import stream
+from music21 import note
+from music21 import duration
 from arvo import tintinnabuli
+from arvo import tools
 
 
 @pytest.fixture
@@ -30,7 +34,8 @@ def test_create_t_voice(major_scale, c_major_chord):
     ],
 )
 def test_create_t_voice_position(major_scale, c_major_chord, position, intended_result):
-    result = tintinnabuli.create_t_voice(major_scale, c_major_chord, position=position)
+    options = tintinnabuli.Options(position=position)
+    result = tintinnabuli.create_t_voice(major_scale, c_major_chord, options)
     assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
@@ -54,9 +59,8 @@ def test_create_t_voice_position(major_scale, c_major_chord, position, intended_
 def test_create_t_voice_direction(
     major_scale, c_major_chord, direction, intended_result
 ):
-    result = tintinnabuli.create_t_voice(
-        major_scale, c_major_chord, direction=direction
-    )
+    options = tintinnabuli.Options(direction=direction)
+    result = tintinnabuli.create_t_voice(major_scale, c_major_chord, options)
     assert list(result.flat.notes) == list(intended_result.flat.notes)
 
 
@@ -75,10 +79,32 @@ def test_create_t_voice_pitch_list_numeric(major_scale):
 @pytest.mark.parametrize(
     "t_mode,intended_result",
     [
-        (tintinnabuli.TMode.DIATONIC, converter.parse("tinyNotation: E E A A A c# c# e")),
-        (tintinnabuli.TMode.CHROMATIC, converter.parse("tinyNotation: C# E A A A c# c# c#")),
+        (
+            tintinnabuli.TMode.DIATONIC,
+            converter.parse("tinyNotation: E E A A A c# c# e"),
+        ),
+        (
+            tintinnabuli.TMode.CHROMATIC,
+            converter.parse("tinyNotation: C# E A A A c# c# c#"),
+        ),
     ],
 )
 def test_create_t_voice_tmode(major_scale, t_mode, intended_result):
-    result = tintinnabuli.create_t_voice(major_scale, ("C#", "E", "A"), t_mode=t_mode)
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    options = tintinnabuli.Options(mode=t_mode)
+    result = tintinnabuli.create_t_voice(major_scale, ("C#", "E", "A"), options)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
+
+def test_create_t_voice_stream(c_major_chord):
+    m_voice = stream.Stream()
+    m_voice.append(note.Note(pitch="C4", duration=duration.Duration(2)))
+    m_voice.append(note.Note(pitch="D4",  duration=duration.Duration(1)))
+    m_voice.append(note.Note(pitch="E4", duration=duration.Duration(3)))
+
+    intended_result = stream.Stream()
+    intended_result.append(note.Note(pitch="E4", duration=duration.Duration(2)))
+    intended_result.append(note.Note(pitch="E4", duration=duration.Duration(1)))
+    intended_result.append(note.Note(pitch="G4", duration=duration.Duration(3)))
+    result = tintinnabuli.create_t_voice(m_voice, c_major_chord)
+
+    score = tools.merge_streams(m_voice, result)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
