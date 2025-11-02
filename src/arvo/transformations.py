@@ -150,9 +150,9 @@ def _transpose_pitch_in_scale_space(
     if steps == 0:
         return
     if steps > 0:
-        direction = "ascending"
+        direction = scale.Direction.ASCENDING
     else:
-        direction = "descending"
+        direction = scale.Direction.DESCENDING
         steps *= -1
     new_pitch = reference_scale.next(original_pitch, direction, steps)
     original_pitch.step = new_pitch.step
@@ -169,9 +169,9 @@ def _get_scale_distance(pitch_a, pitch_b, reference_scale):
     if pitch_a.ps == pitch_b.ps:
         return 0
 
-    direction = "ascending"
+    direction = scale.Direction.ASCENDING
     if pitch_b.ps < pitch_a.ps:
-        direction = "descending"
+        direction = scale.Direction.DESCENDING
 
     scale_distance = 0
     while True:
