@@ -31,7 +31,7 @@ def test_additive_process(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 @pytest.mark.parametrize(
@@ -86,7 +86,7 @@ def test_additive_process(example_stream):
 )
 def test_additive_process_direction(example_stream, direction, intended_result):
     result = minimalism.additive_process(example_stream, direction=direction)
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_step_value_int(example_stream):
@@ -101,7 +101,7 @@ def test_additive_process_step_value_int(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_step_value_sequence(example_stream):
@@ -116,7 +116,7 @@ def test_additive_process_step_value_sequence(example_stream):
         C D E F G A B c d e f g
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_step_value_sequence_absolute(example_stream):
@@ -135,7 +135,7 @@ def test_additive_process_step_value_sequence_absolute(example_stream):
         C D E F G A B c d e f g
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_step_value_sequence_absolute_infinite_loop(example_stream):
@@ -149,7 +149,7 @@ def test_additive_process_step_value_sequence_absolute_infinite_loop(example_str
         C D E 
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_repetitions_int(example_stream):
@@ -182,7 +182,7 @@ def test_additive_process_repetitions_int(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_repetitions_sequence(example_stream):
@@ -215,7 +215,7 @@ def test_additive_process_repetitions_sequence(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_iterations_start(example_stream):
@@ -234,7 +234,7 @@ def test_additive_process_iterations_start(example_stream):
         C D E F G A B c d e f g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_iterations_end(example_stream):
@@ -251,7 +251,7 @@ def test_additive_process_iterations_end(example_stream):
         C D E F G A B c
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_additive_process_nonlinear(example_stream):
@@ -273,7 +273,7 @@ def test_additive_process_nonlinear(example_stream):
         C D     
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 # Subtractive Process Tests
@@ -297,7 +297,7 @@ def test_subtractive_process(example_stream):
         g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 @pytest.mark.parametrize(
@@ -352,7 +352,7 @@ def test_subtractive_process(example_stream):
 )
 def test_subtractive_process_direction(example_stream, direction, intended_result):
     result = minimalism.subtractive_process(example_stream, direction=direction)
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_step_value_int(example_stream):
@@ -367,7 +367,7 @@ def test_subtractive_process_step_value_int(example_stream):
         f g  
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_step_value_sequence(example_stream):
@@ -382,7 +382,7 @@ def test_subtractive_process_step_value_sequence(example_stream):
         e f g  
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_step_value_sequence_absolute(example_stream):
@@ -401,7 +401,7 @@ def test_subtractive_process_step_value_sequence_absolute(example_stream):
         g
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_step_value_sequence_absolute_infinite_loop(example_stream):
@@ -416,7 +416,7 @@ def test_subtractive_process_step_value_sequence_absolute_infinite_loop(example_
         F G A B c d e f g   
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_repetitions_int(example_stream):
@@ -449,7 +449,7 @@ def test_subtractive_process_repetitions_int(example_stream):
         g
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_repetitions_sequence(example_stream):
@@ -482,7 +482,7 @@ def test_subtractive_process_repetitions_sequence(example_stream):
         g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_iterations_start(example_stream):
@@ -500,7 +500,7 @@ def test_subtractive_process_iterations_start(example_stream):
         g
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_iterations_end(example_stream):
@@ -518,7 +518,7 @@ def test_subtractive_process_iterations_end(example_stream):
         d e f g  
     """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)
 
 
 def test_subtractive_process_nonlinear(example_stream):
@@ -541,4 +541,4 @@ def test_subtractive_process_nonlinear(example_stream):
         E F G A B c d e f g   
         """
     )
-    assert list(result.flat.notes) == list(intended_result.flat.notes)
+    assert list(result.flatten().notes) == list(intended_result.flatten().notes)

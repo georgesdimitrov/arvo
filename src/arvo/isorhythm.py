@@ -49,14 +49,14 @@ def create_isorhythm(
     if not isinstance(pitches, stream.Stream):
         pitches = tools.notes_to_stream(pitches)
     color_list = []
-    for element in pitches.flat.notes:
+    for element in pitches.flatten().notes:
         color_list.append(element)
 
     # Create durations list
     if not isinstance(durations, stream.Stream):
         durations = tools.durations_to_stream(durations)
     talea_list = []
-    for element in durations.flat.notes:
+    for element in durations.flatten().notes:
         talea_list.append(element.duration)
 
     # Initialize function variables

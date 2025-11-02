@@ -104,7 +104,7 @@ def additive_process(
 
     # Initialize function variables.
     post_stream = stream.Stream()
-    original_notes = original_stream.flat.notes
+    original_notes = original_stream.flatten().notes
     original_length = len(original_notes)
     iteration_index = 0
     position1 = 0
@@ -249,7 +249,7 @@ def subtractive_process(
 
     # Initialize function variables.
     post_stream = stream.Stream()
-    original_notes = original_stream.flat.notes
+    original_notes = original_stream.flatten().notes
     original_length = len(original_notes)
     iteration_index = -1
     position1 = 0
@@ -383,7 +383,7 @@ def scanning_process(
     """
 
     post_stream = stream.Stream()
-    original_notes = original_stream.flat.notes
+    original_notes = original_stream.flatten().notes
     original_length = len(original_notes)
     progression_index = 0
     start_position = 0
