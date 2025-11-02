@@ -99,7 +99,7 @@ def retrograde(
     post_stream = original_stream if in_place else copy.deepcopy(original_stream)
 
     # Extract list of notes and clear stream of bars and notes
-    notes = list(post_stream.flat.notes)
+    notes = list(post_stream.flatten().notes)
     post_stream.removeByClass("Barline")
     post_stream.removeByClass("Measure")
     post_stream.remove(notes, recurse=True)

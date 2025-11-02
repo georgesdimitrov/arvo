@@ -83,7 +83,7 @@ def create_t_voice(
 
     temp_pitch = pitch.Pitch()
 
-    for m_note in m_voice.flat.notes:
+    for m_note in m_voice.flatten().notes:
         temp_pitch.ps = m_note.pitch.ps
         position_index = 0
         while position_index < position:
